@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sini", "Sini.csproj", "{42CC8F12-6437-4F42-859A-1A6EBCBE6204}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sini.UnitTest", "..\Sini.UnitTest\Sini.UnitTest.csproj", "{0DEEC358-73E9-4679-862D-96BDE4010ADC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42CC8F12-6437-4F42-859A-1A6EBCBE6204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CC8F12-6437-4F42-859A-1A6EBCBE6204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42CC8F12-6437-4F42-859A-1A6EBCBE6204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42CC8F12-6437-4F42-859A-1A6EBCBE6204}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DEEC358-73E9-4679-862D-96BDE4010ADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DEEC358-73E9-4679-862D-96BDE4010ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DEEC358-73E9-4679-862D-96BDE4010ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DEEC358-73E9-4679-862D-96BDE4010ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {492339A2-C219-4FFE-9F1B-0EDA25EF9626}
+	EndGlobalSection
+EndGlobal
