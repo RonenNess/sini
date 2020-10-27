@@ -1,4 +1,7 @@
-﻿
+﻿// IniConfig.cs
+// Configuration struct to use with ini files (how to parse them and custom objects parser).
+// Author: Ronen Ness.
+// Date: 10/2020
 using System;
 using System.Collections.Generic;
 
@@ -15,10 +18,10 @@ namespace Sini
         public char[] CommentCharacters;
 
         /// <summary>
-        /// If true, allow comments in the middle of the line, after the '=' sign.
+        /// If true, allow comments to appear after the value segment.
         /// If false, will only allow comments as first character of every line.
         /// </summary>
-        public bool AllowCommentsInLine;
+        public bool AllowCommentsAfterValue;
 
         /// <summary>
         /// If true, will allow adding sections with square brackets.
@@ -28,7 +31,7 @@ namespace Sini
         /// <summary>
         /// Character used to split between key and value.
         /// </summary>
-        public char SeparationCharacter;
+        public char Delimiter;
 
         /// <summary>
         /// Regex used to validate keys and section names.
@@ -59,13 +62,13 @@ namespace Sini
         /// <summary>
         /// Return default configs.
         /// </summary>
-        public static IniConfig Defaults()
+        public static IniConfig CreateDefaults()
         {
             IniConfig ret = new IniConfig();
             ret.CommentCharacters = new char[] { '#', ';' };
-            ret.AllowCommentsInLine = true;
+            ret.AllowCommentsAfterValue = true;
             ret.AllowSections = true;
-            ret.SeparationCharacter = '=';
+            ret.Delimiter = '=';
             ret.KeyValidationRegex = @"^[a-zA-Z_\.0-9]+$";
             ret.BoolPositiveValues = new HashSet<string>(new string[] { "1", "true", "yes", "on" });
             ret.BoolNegativeValues = new HashSet<string>(new string[] { "0", "false", "no", "off" });

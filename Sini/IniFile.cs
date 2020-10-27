@@ -1,4 +1,8 @@
-﻿using System;
+﻿// IniFile.cs
+// Implement ini file main wrapper class (most lib logic is here).
+// Author: Ronen Ness.
+// Date: 10/2020
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -24,7 +28,7 @@ namespace Sini
         /// <summary>
         /// Default config to use when no config instance is provided.
         /// </summary>
-        public static IniConfig DefaultConfig = IniConfig.Defaults();
+        public static IniConfig DefaultConfig = IniConfig.CreateDefaults();
 
         // current file config.
         IniConfig _config;
@@ -98,7 +102,7 @@ namespace Sini
                 }
 
                 // remove in-line comments
-                if (config.AllowCommentsInLine)
+                if (config.AllowCommentsAfterValue)
                 {
                     foreach (var commentChar in comments)
                     {
@@ -134,8 +138,8 @@ namespace Sini
                 }
 
                 // if got here its not a section - split to key/val with the separation character
-                var equalIndex = line.IndexOf(config.SeparationCharacter);
-                if (equalIndex == -1) { throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': '{rawline}' does not have the sign to split between key and value ({config.SeparationCharacter})."); }
+                var equalIndex = line.IndexOf(config.Delimiter);
+                if (equalIndex == -1) { throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': '{rawline}' does not have the sign to split between key and value ({config.Delimiter})."); }
 
                 // break into key and value
                 var key = line.Substring(0, equalIndex).Trim();
@@ -387,7 +391,15 @@ namespace Sini
             if (asStr == null) { return defaultValue; }
 
             // parse and return
-            return (T)parser(asStr);
+            try
+            {
+                return (T)parser(asStr);
+            }
+            // handle exceptions
+            catch (Exception e)
+            {
+                throw new FormatException($"Invalid value in ini file! Trying to read '[{section ?? string.Empty}].{key}' as custom type '{typeof(T).Name}', but value '{asStr}' raised exception {e}.");
+            }
         }
 
         /// <summary>
