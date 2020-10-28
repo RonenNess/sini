@@ -81,6 +81,21 @@ namespace Sini.UnitTest
         }
 
         [TestMethod]
+        public void Exists()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check existing and non-existing keys in global section
+            Assert.IsTrue(ini.ContainsKey(null, "global_val"));
+            Assert.IsFalse(ini.ContainsKey(null, "global_val_nope"));
+
+            // check existing and non-existing keys in a section
+            Assert.IsTrue(ini.ContainsKey("section1", "str_val"));
+            Assert.IsFalse(ini.ContainsKey("section1", "str_val_nope"));
+        }
+
+        [TestMethod]
         public void WrongFormats()
         {
             // open ini file
@@ -118,11 +133,32 @@ namespace Sini.UnitTest
             Assert.AreEqual(-7, mypoint.Y);
         }
 
+
         // custom struct to test custom parsers
         public struct MyPoint
         {
             public int X;
             public int Y;
+        }
+
+
+        [TestMethod]
+        public void IniToObject()
+        {
+            
+        }
+
+        /// <summary>
+        /// Test object for ini-to-object API.
+        /// </summary>
+        class TestObject
+        {
+            public int Foo;
+            public string Bar;
+            public bool FooBar { get; set; }
+
+            public string NotReadProp { get; private set; }
+            protected string NotReadField;
         }
     }
 }
