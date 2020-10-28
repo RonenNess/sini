@@ -259,60 +259,120 @@ namespace Sini
         }
 
         /// <summary>
-        /// Get int value.
+        /// Get value as char.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
         /// <param name="key">Key to get value for.</param>
         /// <param name="defaultValue">Value to return if key not found.</param>
-        /// <returns>Value if found, or default value if not set Raise exception on invalid format.</returns>
+        /// <returns>Value as char if found, or defaultValue if not set. May raise exception on invalid format.</returns>
+        public char GetChar(string section, string key, char defaultValue = (char)0)
+        {
+            return GetPrimitive<char>(section, key, defaultValue);
+        }
+
+        /// <summary>
+        /// Get value as byte.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <param name="key">Key to get value for.</param>
+        /// <param name="defaultValue">Value to return if key not found.</param>
+        /// <returns>Value as byte if found, or defaultValue if not set. May raise exception on invalid format.</returns>
+        public byte GetByte(string section, string key, byte defaultValue = 0)
+        {
+            return GetPrimitive<byte>(section, key, defaultValue);
+        }
+
+        /// <summary>
+        /// Get value as short.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <param name="key">Key to get value for.</param>
+        /// <param name="defaultValue">Value to return if key not found.</param>
+        /// <returns>Value as short if found, or defaultValue if not set. May raise exception on invalid format.</returns>
+        public short GetShort(string section, string key, short defaultValue = 0)
+        {
+            return GetPrimitive<short>(section, key, defaultValue);
+        }
+
+        /// <summary>
+        /// Get value as ushort.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <param name="key">Key to get value for.</param>
+        /// <param name="defaultValue">Value to return if key not found.</param>
+        /// <returns>Value as ushort if found, or defaultValue if not set. May raise exception on invalid format.</returns>
+        public ushort GetUShort(string section, string key, ushort defaultValue = 0)
+        {
+            return GetPrimitive<ushort>(section, key, defaultValue);
+        }
+
+        /// <summary>
+        /// Get value as int.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <param name="key">Key to get value for.</param>
+        /// <param name="defaultValue">Value to return if key not found.</param>
+        /// <returns>Value as int if found, or defaultValue if not set. May raise exception on invalid format.</returns>
         public int GetInt(string section, string key, int defaultValue = 0)
         {
             return GetPrimitive<int>(section, key, defaultValue);
         }
 
         /// <summary>
-        /// Get long value.
+        /// Get value as uint.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
         /// <param name="key">Key to get value for.</param>
         /// <param name="defaultValue">Value to return if key not found.</param>
-        /// <returns>Value if found, or default value if not set Raise exception on invalid format.</returns>
+        /// <returns>Value as uint if found, or defaultValue if not set. May raise exception on invalid format.</returns>
+        public uint GetUInt(string section, string key, uint defaultValue = 0)
+        {
+            return GetPrimitive<uint>(section, key, defaultValue);
+        }
+
+        /// <summary>
+        /// Get value as long.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <param name="key">Key to get value for.</param>
+        /// <param name="defaultValue">Value to return if key not found.</param>
+        /// <returns>Value as long if found, or defaultValue if not set. May raise exception on invalid format.</returns>
         public long GetLong(string section, string key, long defaultValue = 0)
         {
             return GetPrimitive<long>(section, key, defaultValue);
         }
 
         /// <summary>
-        /// Get unsigned long value.
+        /// Get value as ulong.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
         /// <param name="key">Key to get value for.</param>
         /// <param name="defaultValue">Value to return if key not found.</param>
-        /// <returns>Value if found, or default value if not set Raise exception on invalid format.</returns>
+        /// <returns>Value as ulong if found, or defaultValue if not set. May raise exception on invalid format.</returns>
         public ulong GetULong(string section, string key, ulong defaultValue = 0)
         {
             return GetPrimitive<ulong>(section, key, defaultValue);
         }
 
         /// <summary>
-        /// Get float value.
+        /// Get value as float.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
         /// <param name="key">Key to get value for.</param>
         /// <param name="defaultValue">Value to return if key not found.</param>
-        /// <returns>Value if found, or default value if not set Raise exception on invalid format.</returns>
+        /// <returns>Value as float if found, or defaultValue if not set. May raise exception on invalid format.</returns>
         public float GetFloat(string section, string key, float defaultValue = 0)
         {
             return GetPrimitive<float>(section, key, defaultValue);
         }
 
         /// <summary>
-        /// Get double value.
+        /// Get value as double.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
         /// <param name="key">Key to get value for.</param>
         /// <param name="defaultValue">Value to return if key not found.</param>
-        /// <returns>Value if found, or default value if not set Raise exception on invalid format.</returns>
+        /// <returns>Value as double if found, or defaultValue if not set. May raise exception on invalid format.</returns>
         public double GetDouble(string section, string key, double defaultValue = 0)
         {
             return GetPrimitive<double>(section, key, defaultValue);
@@ -492,7 +552,7 @@ namespace Sini
         /// <typeparam name="T">Object type to read.</typeparam>
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static T ToObject<T>(IniFile ini, ParseObjectFlags flags = ParseObjectFlags.NoFlags)
+        protected static T ToObject<T>(IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
             ToObject(ref ret, ini, null, flags);
@@ -509,7 +569,7 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static T ToObject<T>(IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.NoFlags)
+        protected static T ToObject<T>(IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
             ToObject(ref ret, ini, section, flags);
@@ -526,7 +586,7 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static object ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.NoFlags)
+        protected static object ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
             var ret = Activator.CreateInstance(T);
             ToObject(ref ret, ini, section, flags);
@@ -542,11 +602,28 @@ namespace Sini
         /// <typeparam name="T">Object type to read.</typeparam>
         /// <param name="iniFilePath">Ini file path to read values from.</param>
         /// <param name="flags">Parsing flags.</param>
-        public static T ToObject<T>(string iniFilePath, ParseObjectFlags flags = ParseObjectFlags.NoFlags)
+        /// <param name="section">If provided, will only read data from this section (used to read multiple objects from the same file, but lose the ability to use nesting).</param>
+        public static T ToObject<T>(string iniFilePath, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null)
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
-            ToObject(ref ret, new IniFile(iniFilePath), null, flags);
+            ToObject(ref ret, new IniFile(iniFilePath), section, flags);
             return ret;
+        }
+
+        /// <summary>
+        /// Convert ini file to object.
+        /// This method get an instance of the object and set all its public fields and properties.
+        /// There's also a version of this method that will create an instance with default constructor.
+        /// </summary>
+        /// <remarks>For fields that use custom classes, be sure to register them to ini config first.</remarks>
+        /// <typeparam name="T">Object type to read.</typeparam>
+        /// <param name="instance">Object instance to read values into.</param>
+        /// <param name="ini">Ini file to read values from.</param>
+        /// <param name="flags">Parsing flags.</param>
+        /// <param name="section">If provided, will only read data from this section (used to read multiple objects from the same file, but lose the ability to use nesting).</param>
+        public static void ToObject<T>(ref T instance, IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null)
+        {
+            ToObject<T>(ref instance, ini, section, flags);
         }
 
         /// <summary>
@@ -560,46 +637,72 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        public static void ToObject<T>(ref T instance, IniFile ini, string section = null, ParseObjectFlags flags = ParseObjectFlags.NoFlags)
+        public static void ToObject<T>(ref T instance, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
+            // check if keys should be lowercase or snake case
+            bool lowercase = (flags & ParseObjectFlags.LowercaseKeysAndSections) != 0;
+            bool snakecase = (flags & ParseObjectFlags.SnakecaseKeysAndSections) != 0;
+            if (lowercase && snakecase) { throw new ArgumentException("Can't have both 'LowercaseKeysAndSections' and 'SnakecaseKeysAndSections' flags set!"); }
+
             // iterate public fields and properties we can set
-            foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.SetField | BindingFlags.SetProperty))
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+            var propsAndFields = instance.GetType().GetFields(bindingFlags).Cast<MemberInfo>().Concat(instance.GetType().GetProperties(bindingFlags)).ToArray();
+            foreach (MemberInfo prop in propsAndFields)
             {
+                // make sure we can write to this property. if not, skip
+                if (prop is PropertyInfo)
+                {
+                    if ((prop as PropertyInfo).GetSetMethod() == null) { continue; }
+                }
+
                 // get key from property name
                 var key = prop.Name;
-                var fieldType = prop.PropertyType;
+                var fieldType = prop is PropertyInfo ? (prop as PropertyInfo).PropertyType : (prop as FieldInfo).FieldType;
 
                 // lowercase the key
-                if ((flags & ParseObjectFlags.AllowAdditionalKeys) == 0)
+                if (lowercase)
                 {
                     key = key.ToLower();
                 }
-
-                // get value for current key as string
-                var asStr = ini.GetStr(section, key, null);
-
-                // doesn't exist? skip or throw exception
-                if (asStr == null)
+                // snakecase the key
+                else if (snakecase)
                 {
-                    if ((flags & ParseObjectFlags.AllowMissingFields) == 0) { throw new FormatException($"Missing value for field {prop.Name} (searched under section '{section}' and key '{key}' in file '{ini.Path}')."); }
-                    continue;
+                    key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
                 }
 
                 // value to set
                 object value = null;
 
+                // string type? no processing needed
+                if (fieldType == typeof(string))
+                {
+                    value = ini.GetStr(section, key, null);
+                }
+                // enum value?
+                else if (fieldType.IsEnum)
+                {
+                    var asStr = ini.GetStr(section, key, null);
+                    if (asStr != null && !Enum.TryParse(fieldType, asStr, out value))
+                    {
+                        throw new FormatException($"Invalid value in ini file! Trying to read '[{section ?? string.Empty}].{key}' as enum of type '{fieldType.Name}', but value is '{asStr}'.");
+                    }
+                }
                 // primitive type? get primitive value and set
-                if (fieldType.IsPrimitive)
+                else if (fieldType.IsPrimitive)
                 {
                     // attempt to parse value as primitive
-                    try
+                    var asStr = ini.GetStr(section, key, null);
+                    if (asStr != null)
                     {
-                        value = ini.ParsePrimitive(fieldType, asStr);
-                    }
-                    // handle invalid formats
-                    catch (Exception)
-                    {
-                        throw new FormatException($"Invalid value in ini file! Tried to parse '[{section ?? string.Empty}].{key}' as {fieldType.Name}, but value was invalid ('{asStr}').");
+                        try
+                        {
+                            value = ini.ParsePrimitive(fieldType, asStr);
+                        }
+                        // handle invalid formats
+                        catch (Exception)
+                        {
+                            throw new FormatException($"Invalid value in ini file! Tried to parse '[{section ?? string.Empty}].{key}' as {fieldType.Name}, but value was invalid ('{asStr}').");
+                        }
                     }
                 }
                 // not a primitive type?
@@ -609,14 +712,18 @@ namespace Sini
                     if (ini._config.CustomParsers.TryGetValue(fieldType, out Func<string, object> parser))
                     {
                         // parse and return
-                        try
+                        var asStr = ini.GetStr(section, key, null);
+                        if (asStr != null)
                         {
-                            value = parser(asStr);
-                        }
-                        // handle exceptions
-                        catch (Exception e)
-                        {
-                            throw new FormatException($"Invalid value in ini file! Trying to read '[{section ?? string.Empty}].{key}' as custom type '{fieldType.Name}', but value '{asStr}' raised exception {e}.");
+                            try
+                            {
+                                value = parser(asStr);
+                            }
+                            // handle exceptions
+                            catch (Exception e)
+                            {
+                                throw new FormatException($"Invalid value in ini file! Trying to read '[{section ?? string.Empty}].{key}' as custom type '{fieldType.Name}', but value '{asStr}' raised exception {e}.");
+                            }
                         }
                     }
                     // if we got here we have no choice but to try and convert the nested object from ini to custom type recursively.
@@ -628,13 +735,35 @@ namespace Sini
                             throw new NotSupportedException($"Couldn't find any registered parser for field '{prop.Name}' of type '{fieldType}', and we tried to parse it while already in a section, ie in a nested object. Note that building objects from ini only support one nesting level.");
                         }
 
+                        // section name should be current key
+                        var nested_section = key;
+
+                        // lowercase the section
+                        if (lowercase)
+                        {
+                            nested_section = nested_section.ToLower();
+                        }
+                        // snakecase the section
+                        else if (snakecase)
+                        {
+                            nested_section = string.Concat(nested_section.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+                        }
+
                         // parse value 
-                        value = ToObject(fieldType, ini, section, flags);
+                        value = ToObject(fieldType, ini, nested_section, flags);
                     }
                 }
 
+                // value doesn't exist? skip or throw exception
+                if (value == null)
+                {
+                    if ((flags & ParseObjectFlags.AllowMissingFields) == 0) { throw new FormatException($"Missing value for field {prop.Name} (searched under section '{section}' and key '{key}' in file '{ini.Path}')."); }
+                    continue;
+                }
+
                 // finally - set field value in instance
-                prop.SetValue(instance, value);
+                (prop as PropertyInfo)?.SetValue(instance, value);
+                (prop as FieldInfo)?.SetValue(instance, value);
             }
 
             // make sure there are no unread keys
@@ -660,22 +789,33 @@ namespace Sini
             NoFlags = 0,
 
             /// <summary>
+            /// Default keys to set.
+            /// </summary>
+            DefaultFalgs = SnakecaseKeysAndSections,
+
+            /// <summary>
             /// If set, some fields may not exist in ini file and that's OK.
             /// If not set and a missing field is found (public field in object type that don't have value in file) - will throw exception.
             /// </summary>
-            AllowMissingFields = 1,
+            AllowMissingFields = 1 << 0,
 
             /// <summary>
             /// If set, will allow ini file to have additional keys that were not read into any field.
             /// If not set, will throw exception on such keys.
             /// </summary>
-            AllowAdditionalKeys = 2,
+            AllowAdditionalKeys = 1 << 1,
 
             /// <summary>
-            /// If set, will expect keys to be lowercase. So if for example we try to read field named Foo, in ini file we'll look for key 'foo'.
-            /// If not set, key name is expected to be exactly like field name.
+            /// If set, will expect keys to be lowercase. So if for example we try to read a field named Foo, in ini file we'll look for key 'foo'.
+            /// If not set, key name is expected to be exactly like field name. This flag is not competible with SnakecaseKeysAndSections.
             /// </summary>
-            LowercaseKeys = 4,
+            LowercaseKeysAndSections = 1 << 2,
+
+            /// <summary>
+            /// If set, will expect keys to be in snakecase. So if for example we try to read a field named FooBar, in the ini file we'll look for key 'foo_bar'.
+            /// If not set, key name is expected to be exactly like field name. This flag is not competible with LowercaseKeysAndSections.
+            /// </summary>
+            SnakecaseKeysAndSections = 1 << 3,
         }
 
         #endregion

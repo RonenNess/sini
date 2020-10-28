@@ -7,7 +7,7 @@ namespace Sini.UnitTest
     public class SiniUnitTest
     {
         // test enum values.
-        enum MyEnum
+        public enum MyEnum
         {
             Foo,
             Bar,
@@ -26,8 +26,13 @@ namespace Sini.UnitTest
             // test basic values from section
             Assert.AreEqual("val1",                     ini.GetStr("section1", "str_val"));
             Assert.AreEqual(123,                        ini.GetInt("section1", "int_val"));
+            Assert.AreEqual((uint)123,                  ini.GetUInt("section1", "int_val"));
+            Assert.AreEqual((ushort)123,                ini.GetUShort("section1", "int_val"));
+            Assert.AreEqual(123,                        ini.GetShort("section1", "int_val"));
+            Assert.AreEqual((byte)123,                  ini.GetByte("section1", "int_val"));
+            Assert.AreEqual('a',                        ini.GetChar("section1", "char_val"));
             Assert.AreEqual(12345678901234,             ini.GetLong("section1", "long_val"));
-            Assert.AreEqual(12345678901234567890,       ini.GetULong("section1", "ulong_val"));
+            Assert.AreEqual((ulong)12345678901234567890,ini.GetULong("section1", "ulong_val"));
             Assert.AreEqual(1.2f,                       ini.GetFloat("section1", "float_val"));
             Assert.AreEqual(4.51524141252152111,        ini.GetDouble("section1", "double_val"));
             Assert.AreEqual(-123,                       ini.GetInt("section1", "negative_int_val"));
@@ -145,13 +150,55 @@ namespace Sini.UnitTest
         [TestMethod]
         public void IniToObject()
         {
-            
+            // register cusom type parser for point
+            IniFile.DefaultConfig.CustomParsers[typeof(MyPoint)] = (string val) =>
+            {
+                var parts = val.Split(',');
+                return new MyPoint() { X = int.Parse(parts[0]), Y = int.Parse(parts[1]) };
+            };
+
+            // parse object
+            TestObject ret = IniFile.ToObject<TestObject>("test_object.ini");
+
+            // validate fields
+            Assert.AreEqual(5, ret.Foo);
+            Assert.AreEqual("hello", ret.Bar);
+            Assert.IsTrue(ret.FooBar);
+            Assert.AreEqual(MyEnum.Bar, ret.EnumVal);
+            Assert.AreEqual(7, ret.Point.X);
+            Assert.AreEqual(3, ret.Point.Y);
+
+            // validate nested fields
+            Assert.AreEqual(5, ret.Nested.ThisIsNested);
+            Assert.AreEqual(10, ret.Nested.OtherField);
+            Assert.AreEqual(MyEnum.Foo, ret.Nested.EnumVal);
+            Assert.AreEqual(-1, ret.Nested.NestedPoint.X);
+            Assert.AreEqual(-5, ret.Nested.NestedPoint.Y);
+
+            // read two objects from the same file
+            TestObjectMulti obj1 = IniFile.ToObject<TestObjectMulti>("test_object_multi.ini", section: "obj1");
+            TestObjectMulti obj2 = IniFile.ToObject<TestObjectMulti>("test_object_multi.ini", section: "obj2");
+
+            // check the multi objects read
+            Assert.AreEqual("bar", obj1.Foo);
+            Assert.AreEqual("world", obj1.Hello);
+            Assert.AreEqual("rab", obj2.Foo);
+            Assert.AreEqual("bye", obj2.Hello);
+        }
+
+        /// <summary>
+        /// Test object for ini-to-object API with specific section.
+        /// </summary>
+        public class TestObjectMulti
+        {
+            public string Foo;
+            public string Hello;
         }
 
         /// <summary>
         /// Test object for ini-to-object API.
         /// </summary>
-        class TestObject
+        public class TestObject
         {
             public int Foo;
             public string Bar;
@@ -159,6 +206,22 @@ namespace Sini.UnitTest
 
             public string NotReadProp { get; private set; }
             protected string NotReadField;
+
+            public MyEnum EnumVal;
+            public MyPoint Point;
+
+            public NestedTestObject Nested;
+        }
+
+        /// <summary>
+        /// Nested object to parse from inside TestObject.
+        /// </summary>
+        public class NestedTestObject
+        {
+            public int ThisIsNested;
+            public float OtherField;
+            public MyEnum EnumVal;
+            public MyPoint NestedPoint;
         }
     }
 }

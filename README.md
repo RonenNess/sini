@@ -46,19 +46,24 @@ bool_key = true
 enum_key = Bar  ; possible values = Foo / Bar
 ```
 
-## Basic Types
+## Reading Primitives
 
 SINI has convinient methods to read the following primitive types:
 
 - GetStr()
+- GetChar()
+- GetByte()
+- GetShort()
+- GetUShort()
 - GetInt()
+- GetUInt()
 - GetLong()
 - GetULong()
 - GetFloat()
 - GetDouble()
 - GetBool()
 
-If you need a built-in C# type that doesn't have a convinient wrapper, you can use `GetPrimitive()` instead. For example, lets try with Short:
+If you need a built-in C# type that doesn't have a convenient wrapper, you can use `GetPrimitive()` instead. For example, lets try with Short:
 
 ```cs
 short value = GetPrimitive<short>("section", "some_key", -1);
@@ -69,11 +74,9 @@ short value = GetPrimitive<short>("section", "some_key", -1);
 If you try to read a wrong format, for example you try to read int but value is not a valid number, a `FormatException` exception will be thrown. This exception is used by any Get*() method that can fail on parsing.
 
 
-# Advanced Stuff
+## Reading Custom Types
 
-## Custom Types
-
-Lets say you have a custom type and you want to be able to read it from ini files:
+Lets say you have a custom type and you want to be able to read it from ini files as if it was a primitive type. For example, a point struct:
 
 ```cs
 public struct MyPoint
@@ -102,6 +105,133 @@ MyPoint point = ini.GetCustomType("section1", "point_value", new MyPoint());
 
 Note that if you get exception inside your parsing method, SINI will capture it and raise a `FormatException` instead, which is the exception you get on any invalid format.
 
+Once you register a custom parsers, you can use this new type freely when converting INI to Objects with the `ToObject()` API.
+
+
+## INI to Object
+
+C# have a wonderful functionality to convert XML files into object instances. If you don't know about it, go look it up now, it's extremely useful.
+
+SINI provides a similar ability, but with INI files. For example, lets say you have the following object:
+
+```cs
+public class MyObj
+{
+    public int Foo;
+    public string Bar;
+}
+```
+
+You can write a corresponding ini file for it with values:
+
+```ini
+foo = 5
+bar = hello
+```
+
+And then just read it directly into an instance:
+
+```cs
+MyObj obj1 = IniFile.ToObject<MyObj>("my_ini_file.ini");
+```
+
+When using ToObject(), SINI will attempt to read any Field and Property with public setter from the ini file provided (using reflection).
+Note that the name of the fields turns into *snakecase* while in the ini file. You can control this behavior, but more on that later.
+
+### Nesting
+
+Sometimes you have nested objects in your class, for example if your class looks like this:
+
+```cs
+public class MyObj
+{
+    public int Foo;
+    public string Bar;
+    public MyObjNested Nested;
+}
+
+public class MyObjNested
+{
+    public bool FooBar;
+}
+```
+
+In this case, when you try to read ini file into an instance, the nested object will attempt to read itself from a section with the same name (but in snakecase):
+
+```ini
+foo = 5
+bar = hello
+
+[nested]
+foo_bar = true
+```
+
+Note that ToObject() only supports *one level of nesting*. This is because, in a way, ini files don't really support nesting either. Treating section names as nested object names, while intuitive, is not a defined behavior.
+
+### Using Custom Types
+
+If you defined custom type parsers, like with `MyPoint` in the example (#reading-custom-types)[here], they will be used while converting to objects.
+
+### Multiple Objects In Single File
+
+The `ToObject` methods accept an optional `section` parameter. 
+Providing it will only read data from the given section, and treat it as the global scope. That way, you can store multiple objects in a single file.
+
+For example, we can create this ini file:
+
+```ini
+[obj1]
+foo = bar
+hello = world
+
+[obj2]
+foo = rab
+hello = bye
+```
+
+And then use it like this:
+
+```cs
+public class MyObj
+{
+    public string Foo;
+    public string Hello;
+}
+
+MyObj obj1 = IniFile.ToObject<MyObj>("my_ini_file.ini", section:"obj1");
+MyObj obj2 = IniFile.ToObject<MyObj>("my_ini_file.ini", section:"obj2");
+```
+
+Needless to say, in this case since we already begin from a section you can't have nested objects read.
+
+### Flags
+
+You may have noticed that the `ToObject()` method also accepts an optional `flags` parameter. These flags determine the behavior while loading the ini file into the object. Let's list them here:
+
+#### AllowMissingFields
+
+If set, SINI wouldn't mind if not all public properties are loaded from ini file.
+If not set, you'll get an exception unless the ini file populate all fields.
+
+#### AllowAdditionalKeys
+
+If set, SINI wouldn't mind if there are extra keys in the ini file that don't match any of the object's fields.
+If not set, you'll get an exception for any unused key.
+
+Note that this validation only runs if you read the whole file, and not just a specific section in it.
+
+#### LowercaseKeysAndSections
+
+If set, when searching for a field in the ini file we'll lowercase its name.
+So in this case we'll read 'foo' into 'Foo', and 'foobar' into 'FooBar'. This also affect section names.
+
+#### SnakecaseKeysAndSections
+
+If set (default is true), when searching for a field in the ini file we'll snakecase its name.
+So in this case we'll read 'foo' into 'Foo', and 'foo_bar' into 'FooBar'. This also affect section names.
+
+
+# Advanced Stuff
 
 ## Booleans
 
