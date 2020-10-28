@@ -7,7 +7,7 @@
 	<owners>RonenNess</owners>
 	<title>SINI</title>
 	<summary>Simple INI files for .net core, with built-in ini-to-objects functionality.</summary>
-	<licenseUrl>https://en.wikipedia.org/wiki/MIT_License</licenseUrl>
+	<license type="expression">MIT</license>
 	<projectUrl>https://github.com/RonenNess/sini</projectUrl>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<releaseNotes>First release with basic functionality.</releaseNotes>
@@ -16,10 +16,11 @@
 SINI support comments and sections, and highly configurable.</description>
 	<tags>ini,config,conf,.ini</tags>
 	<dependencies>
+        <group targetFramework=".NETCore0.0" />
 	</dependencies>
   </metadata>
   <files>
-	<file src="Sini\bin\Release\netcoreapp3.1\Sini.dll" target="lib\sini\Sini.dll"/>
+	<file src="Sini\bin\Release\netcoreapp3.1\Sini.dll" target="lib\netcore\sini\Sini.dll"/>
     <file src="LICENSE" target="LICENSE" /> 
   </files>
 </package>
