@@ -210,7 +210,7 @@ You may have noticed that the `ToObject()` method also accepts an optional `flag
 #### AllowMissingFields
 
 If set, SINI wouldn't mind if not all public properties are loaded from ini file.
-If not set, you'll get an exception unless the ini file populate all fields.
+If not set, you'll get an exception unless the ini file populates all public fields.
 
 #### AllowAdditionalKeys
 
@@ -221,13 +221,13 @@ Note that this validation only runs if you read the whole file, and not just a s
 
 #### LowercaseKeysAndSections
 
-If set, when searching for a field in the ini file we'll lowercase its name.
-So in this case we'll read 'foo' into 'Foo', and 'foobar' into 'FooBar'. This also affect section names.
+If set, when searching for a field in the ini file its name will be lowercased.
+For example, a field named 'Foo' will be taken from a key named 'foo', and 'FooBar' from 'foobar'. This also affect section names.
 
 #### SnakecaseKeysAndSections
 
-If set (default is true), when searching for a field in the ini file we'll snakecase its name.
-So in this case we'll read 'foo' into 'Foo', and 'foo_bar' into 'FooBar'. This also affect section names.
+If set (default), when searching for a field in the ini file its name will be snake_cased.
+For example, a field named 'Foo' will be taken from a key named 'foo', and 'FooBar' from 'foo_bar'. This also affect section names.
 
 
 # Advanced Stuff
@@ -243,13 +243,21 @@ IniFile.DefaultConfig.BoolPositiveValues.Add("yeah");
 IniFile.DefaultConfig.BoolNegativeValues.Add("nah");
 ```
 
-Note that before parsing booleans SINI will lowercase the value, meaning that 'TrUe' is the same as 'true'. You can also modify this behavior:
+Note that before parsing booleans SINI will lowercase the value, meaning that 'TrUe' will be treated as 'true'. You can also modify this behavior if you don't want it:
 
 ```cs
 IniFile.DefaultConfig.LowercaseBoolValues = false;
 ```
 
-## Key & Section validation
+If you disable lowering case of booleans, values like these:
+
+```ini
+broken_val = True
+```
+
+Will raise `FormatException`, because `True` != `true`.
+
+## Keys & Section validation
 
 By default SINI will only accept English characters, underscore, digits and dots for sections and key names. For example, the following keys will throw an exception:
 
@@ -259,37 +267,51 @@ bad-key2 = val
 badkêy = val
 ```
 
-The keys / section validation is done by a `RegEx` expression. You can change it by changing `IniFile.DefaultConfig.KeyValidationRegex`. For example, lets make it only accept English characters:
+The keys / section validation is done by a `RegEx` match. You can use a different regex and change the naming rules by setting `IniFile.DefaultConfig.KeyValidationRegex`. For example, lets make it only accept English characters, no digits, underscore or dots:
 
 ```cs
 IniFile.DefaultConfig.KeyValidationRegex = @"^[a-zA-Z]+$";
 ```
 
+You can also set it to null, if you don't want any validations.
+
 ## Changing Delimiter
 
-By default SINI will use '=' as delimiter between key and value. If you want to change that for whatever reason, for example lets say you want to use '|' instead of '=', you can set it in DefaultConfig:
+By default SINI will use '=' as delimiter between key and value. If you want to change that for whatever reason, you can set it in the ini config:
 
 ```cs
 IniFile.DefaultConfig.Delimiter = '|';
 ```
 
+The example above now expect ini file to look like this:
+
+```ini
+some_key | some_val
+```
+
 ## Comments
 
-By default SINI will use ';' and '#' as comments. You can change these characters. For example, lets say we want to use '&' instead:
+By default SINI will use ';' and '#' as comments, but you can change these characters. For example, lets say we want to use '&' instead:
 
 ```cs
 IniFile.DefaultConfig.CommentCharacters = new char[] { '&' };
 ```
 
-In addition you can decide if you want to allow comments only at the begining of a line, or if you want to allow comments after the value part (default behavior):
+In addition you can decide if you want to allow comments only at the begining of a line, or if you want to allow comments after the value part (default behavior). To disable comments after value, set `AllowCommentsAfterValue` to false:
 
 ```cs
-IniFile.DefaultConfig.AllowCommentsAfterValue = true;
+IniFile.DefaultConfig.AllowCommentsAfterValue = false;
+```
+
+Once set to false, lines like these will not be accepted:
+
+```ini
+some_key = some_val ; this is broken
 ```
 
 ## Per-file Config
 
-As you probably noticed, there's a static config instance which is used to determine the behavior of SINI: `IniFile.DefaultConfig`. Note that you can also provide a per-file config in the IniFile constructor:
+In the examples above we only used a static config instance, `IniFile.DefaultConfig`, which is used to determine the behavior of SINI when no specific config is provided. Note that you can provide custom configurations per ini file you open, as a constructor parameter. For example:
 
 ```cs
 var customConf = IniConfig.CreateDefaults();
