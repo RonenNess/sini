@@ -174,7 +174,7 @@ If you defined any custom type parsers prior to calling `ToObject()`, for exampl
 ### Multiple Objects in a single file
 
 The `ToObject` methods accept an optional `section` parameter. 
-Providing it will only read data from the given section, and treat it as the global scope. That way, you can store multiple objects in a single file.
+Providing it will only read data from the given section, and treat it as the global scope. You can use this to store multiple objects in a single file, separated by sections.
 
 For example, we can create this ini file:
 
@@ -188,7 +188,7 @@ foo = rab
 hello = bye
 ```
 
-And then use it like this:
+And then read two objects from it:
 
 ```cs
 public class MyObj
@@ -201,11 +201,11 @@ MyObj obj1 = IniFile.ToObject<MyObj>("my_ini_file.ini", section:"obj1");
 MyObj obj2 = IniFile.ToObject<MyObj>("my_ini_file.ini", section:"obj2");
 ```
 
-Needless to say, in this case since we already begin from a section you can't have nested objects read.
+Needless to say, in this case we can't have any nested fields, since we already begin in a section.
 
-### Flags
+### ToObject Flags
 
-You may have noticed that the `ToObject()` method also accepts an optional `flags` parameter. These flags determine the behavior while loading the ini file into the object. Let's list them here:
+You may have noticed that the `ToObject()` method also accepts an optional `flags` parameter. These flags determine the behavior while loading the ini file into an object. Let's list them here:
 
 #### AllowMissingFields
 
