@@ -3,7 +3,7 @@
 SINI (Simple INI) is an ini files wrapper lib with easy-to-use methods to parse C# primitives as well as enums and custom objects. 
 It also provides an API to convert an ini file into an object instance, similar to how C# allow to read XMLs as objects. 
 
-SINI support comments and sections, and highly configurable.
+SINI support comments and sections, and is highly configurable.
 
 # Install
 
@@ -48,7 +48,7 @@ enum_key = Bar  ; possible values = Foo / Bar
 
 ## Reading Primitives
 
-SINI has convinient methods to read the following primitive types:
+SINI has convenient methods to read the following primitive types:
 
 - GetStr()
 - GetChar()
@@ -62,8 +62,9 @@ SINI has convinient methods to read the following primitive types:
 - GetFloat()
 - GetDouble()
 - GetBool()
+- GetEnum()
 
-If you need a built-in C# type that doesn't have a convenient wrapper, you can use `GetPrimitive()` instead. For example, lets try with Short:
+If you need a built-in C# type that doesn't have a wrapper, you can use `GetPrimitive<T>()` instead. For example, lets try with short:
 
 ```cs
 short value = GetPrimitive<short>("section", "some_key", -1);
@@ -103,16 +104,14 @@ And later you can use it like this:
 MyPoint point = ini.GetCustomType("section1", "point_value", new MyPoint());
 ```
 
-Note that if you get exception inside your parsing method, SINI will capture it and raise a `FormatException` instead, which is the exception you get on any invalid format.
-
-Once you register a custom parsers, you can use this new type freely when converting INI to Objects with the `ToObject()` API.
+Note that if you get an exception inside your parser method, SINI will capture it and raise a `FormatException` instead, which is the exception you get on any invalid format.
 
 
 ## INI to Object
 
-C# have a wonderful functionality to convert XML files into object instances. If you don't know about it, go look it up now, it's extremely useful.
+C# have a wonderful functionality to convert XML files into object instances. If you didn't know about it, [check it out](https://docs.microsoft.com/en-us/dotnet/api/system.xml.serialization.xmlserializer?view=netcore-3.1) now - it's extremely useful.
 
-SINI provides a similar ability, but with INI files. For example, lets say you have the following object:
+SINI provides a similar functionality, but with INI files instead. For example, lets say you have the following object:
 
 ```cs
 public class MyObj
@@ -122,21 +121,21 @@ public class MyObj
 }
 ```
 
-You can write a corresponding ini file for it with values:
+You can write a corresponding ini file for it that looks like this:
 
 ```ini
 foo = 5
 bar = hello
 ```
 
-And then just read it directly into an instance:
+And then read it directly into an instance, with the `IniFile.ToObject()` method:
 
 ```cs
 MyObj obj1 = IniFile.ToObject<MyObj>("my_ini_file.ini");
 ```
 
-When using ToObject(), SINI will attempt to read any Field and Property with public setter from the ini file provided (using reflection).
-Note that the name of the fields turns into *snakecase* while in the ini file. You can control this behavior, but more on that later.
+When using ToObject(), SINI will attempt to read any Field and Property with public setters from the ini file (using reflection).
+Note that the name of the fields turns into *snake_case* while in the ini file. You can control this behavior, but more on that later.
 
 ### Nesting
 
@@ -156,7 +155,7 @@ public class MyObjNested
 }
 ```
 
-In this case, when you try to read ini file into an instance, the nested object will attempt to read itself from a section with the same name (but in snakecase):
+In this case, when you try to read an ini file into the object, the nested object will attempt to read itself from a section with the same name (but in snake case). So in this case, your ini file should look something like this:
 
 ```ini
 foo = 5
@@ -166,13 +165,13 @@ bar = hello
 foo_bar = true
 ```
 
-Note that ToObject() only supports *one level of nesting*. This is because, in a way, ini files don't really support nesting either. Treating section names as nested object names, while intuitive, is not a defined behavior.
+Note that ToObject() only supports *one level of nesting*. This is because ini files don't support nesting, and you can't tell if a new section is contained inside the previous section, or under root.
 
-### Using Custom Types
+### Custom Parsers
 
-If you defined custom type parsers, like with `MyPoint` in the example (#reading-custom-types)[here], they will be used while converting to objects.
+If you defined any custom type parsers prior to calling `ToObject()`, for example like with `MyPoint` [in the example above](#reading-custom-types), they will be used when attempting to read this type instead of the default behavior (which is calling `ToObject()` internally on a section with the same name).
 
-### Multiple Objects In Single File
+### Multiple Objects in a single file
 
 The `ToObject` methods accept an optional `section` parameter. 
 Providing it will only read data from the given section, and treat it as the global scope. That way, you can store multiple objects in a single file.
