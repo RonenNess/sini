@@ -1,7 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sini;
 using System;
 
-namespace Sini.UnitTest
+namespace SiniTest.UnitTest
 {
     [TestClass]
     public class SiniUnitTest

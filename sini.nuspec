@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
 	<id>Sini</id>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<authors>Ronen Ness</authors>
 	<owners>RonenNess</owners>
 	<title>SINI</title>
@@ -16,11 +16,12 @@
 SINI support comments and sections, and highly configurable.</description>
 	<tags>ini,config,conf,.ini</tags>
 	<dependencies>
-        <group targetFramework=".NETCore0.0" />
+        <group targetFramework=".NETCoreApp3.1" />
 	</dependencies>
   </metadata>
   <files>
-	<file src="Sini\bin\Release\netcoreapp3.1\Sini.dll" target="lib\netcore\sini\Sini.dll"/>
+	<file src="Sini\bin\Release\netcoreapp3.1\Sini.dll" target="lib\netcoreapp3.1\Sini.dll"/>
+    <file src="Sini\bin\Release\netcoreapp3.1\Sini.xml" target="lib\netcoreapp3.1\Sini.xml"/>
     <file src="LICENSE" target="LICENSE" /> 
   </files>
 </package>
