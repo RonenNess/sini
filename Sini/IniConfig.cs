@@ -55,6 +55,12 @@ namespace Sini
         public bool LowercaseBoolValues;
 
         /// <summary>
+        /// If not \0, will allow to break values into multiple lines (for strings) by adding this character at the end of the line.
+        /// For example, if the value is \, every value ending with \ will continue to next line. Need need to repeat the key.
+        /// </summary>
+        public char ContinueNextLineCharacter;
+
+        /// <summary>
         /// Custom parsing methods for fetching custom types.
         /// </summary>
         public Dictionary<Type, Func<string, object>> CustomParsers;
@@ -73,6 +79,7 @@ namespace Sini
             ret.BoolPositiveValues = new HashSet<string>(new string[] { "1", "true", "yes", "on" });
             ret.BoolNegativeValues = new HashSet<string>(new string[] { "0", "false", "no", "off" });
             ret.LowercaseBoolValues = true;
+            ret.ContinueNextLineCharacter = '\\';
             ret.CustomParsers = new Dictionary<Type, Func<string, object>>();
             return ret;
         }

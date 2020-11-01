@@ -18,7 +18,7 @@ namespace Sini
     /// </summary>
     public class IniFile
     {
-        #region Properties
+        #region Fields
 
         // sections.
         Dictionary<string, Dictionary<string, string>> _sections = new Dictionary<string, Dictionary<string, string>>();
@@ -77,6 +77,10 @@ namespace Sini
             ParseLines(fileContent, config ?? DefaultConfig);
         }
 
+        #endregion
+
+        #region Parsing
+
         /// <summary>
         /// Parse ini file lines.
         /// </summary>
@@ -93,6 +97,10 @@ namespace Sini
             // currently active section
             Dictionary<string, string> section = _globalSection;
 
+            // for multiline values
+            bool continueMultiline = false;
+            string lastKey = null;
+
             // iterate and parse lines
             int lineIndex = 0;
             foreach (string rawline in lines)
@@ -106,7 +114,26 @@ namespace Sini
                 // skip empty and comment lines
                 if (string.IsNullOrEmpty(line) || comments.Contains(line[0]))
                 { 
-                    continue; 
+                    if (continueMultiline) { throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': Cannot have empty line or comment after multiline value (previous line ended with '{config.ContinueNextLineCharacter}' which means value should continue to this line)."); }
+                    continue;
+                }
+
+                // if we continue previous value, append it
+                if (continueMultiline)
+                {
+                    // get value and check if should continue to another line
+                    var lineVal = rawline.Trim();
+                    continueMultiline = lineVal.EndsWith(config.ContinueNextLineCharacter);
+                    
+                    // remove multiline trailing character
+                    if (continueMultiline)
+                    {
+                        lineVal = lineVal.Substring(0, lineVal.Length - 1).TrimEnd();
+                    }
+
+                    // append value and continue
+                    section[lastKey] = section[lastKey] + '\n' + lineVal;
+                    continue;
                 }
 
                 // remove in-line comments
@@ -152,11 +179,21 @@ namespace Sini
                 // break into key and value
                 var key = line.Substring(0, equalIndex).Trim();
                 var value = line.Substring(equalIndex + 1).Trim();
+                lastKey = key;
 
                 // validate key
                 if (!string.IsNullOrEmpty(config.KeyValidationRegex) && !Regex.IsMatch(key, config.KeyValidationRegex))
                 {
                     throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': '{rawline}' key part '{key}' did not pass the regex validation.");
+                }
+
+                // check if we continue reading multiline value
+                continueMultiline = (config.ContinueNextLineCharacter != '\0') && value.EndsWith(config.ContinueNextLineCharacter);
+
+                // remove multiline trailing character
+                if (continueMultiline)
+                {
+                    value = value.Substring(0, value.Length - 1).TrimEnd();
                 }
 
                 // add value
@@ -586,10 +623,11 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static object ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
+        /// <param name="keyPrefix">Prefix to append to all keys.</param>
+        protected static object ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string keyPrefix = "")
         {
             var ret = Activator.CreateInstance(T);
-            ToObject(ref ret, ini, section, flags);
+            ToObject(ref ret, ini, section, flags, keyPrefix);
             return ret;
         }
 
@@ -603,10 +641,11 @@ namespace Sini
         /// <param name="iniFilePath">Ini file path to read values from.</param>
         /// <param name="flags">Parsing flags.</param>
         /// <param name="section">If provided, will only read data from this section (used to read multiple objects from the same file, but lose the ability to use nesting).</param>
-        public static T ToObject<T>(string iniFilePath, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null)
+        /// <param name="keyPrefix">Prefix to append to all keys.</param>
+        public static T ToObject<T>(string iniFilePath, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null, string keyPrefix = "")
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
-            ToObject(ref ret, new IniFile(iniFilePath), section, flags);
+            ToObject(ref ret, new IniFile(iniFilePath), section, flags, keyPrefix);
             return ret;
         }
 
@@ -621,9 +660,10 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="flags">Parsing flags.</param>
         /// <param name="section">If provided, will only read data from this section (used to read multiple objects from the same file, but lose the ability to use nesting).</param>
-        public static void ToObject<T>(ref T instance, IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null)
+        /// <param name="keyPrefix">Prefix to append to all keys.</param>
+        public static void ToObject<T>(ref T instance, IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null, string keyPrefix = "")
         {
-            ToObject<T>(ref instance, ini, section, flags);
+            ToObject<T>(ref instance, ini, section, flags, keyPrefix);
         }
 
         /// <summary>
@@ -637,7 +677,8 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        public static void ToObject<T>(ref T instance, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
+        /// <param name="keyPrefix">Prefix to append to all keys.</param>
+        public static void ToObject<T>(ref T instance, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string keyPrefix = "")
         {
             // check if keys should be lowercase or snake case
             bool lowercase = (flags & ParseObjectFlags.LowercaseKeysAndSections) != 0;
@@ -669,6 +710,10 @@ namespace Sini
                 {
                     key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
                 }
+
+                // add prefix
+                var keyNoPrefix = key;
+                key = keyPrefix + key;
 
                 // value to set
                 object value = null;
@@ -729,28 +774,23 @@ namespace Sini
                     // if we got here we have no choice but to try and convert the nested object from ini to custom type recursively.
                     else
                     {
-                        // if we're already in section, error
+                        // section and prefix to use for nested object
+                        string nestedSection = section;
+                        string nestedKeyPrefix = keyPrefix;
+
+                        // if we're already in a section, use key prefix
                         if (section != null)
                         {
-                            throw new NotSupportedException($"Couldn't find any registered parser for field '{prop.Name}' of type '{fieldType}', and we tried to parse it while already in a section, ie in a nested object. Note that building objects from ini only support one nesting level.");
+                            nestedKeyPrefix += keyNoPrefix + ".";
                         }
-
-                        // section name should be current key
-                        var nested_section = key;
-
-                        // lowercase the section
-                        if (lowercase)
+                        // if we're not in a section, use section for nesting
+                        else
                         {
-                            nested_section = nested_section.ToLower();
-                        }
-                        // snakecase the section
-                        else if (snakecase)
-                        {
-                            nested_section = string.Concat(nested_section.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+                            nestedSection = keyNoPrefix;
                         }
 
                         // parse value 
-                        value = ToObject(fieldType, ini, nested_section, flags);
+                        value = ToObject(fieldType, ini, nestedSection, flags, nestedKeyPrefix);
                     }
                 }
 

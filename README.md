@@ -5,6 +5,8 @@ It also provides an API to convert an ini file into an object instance, similar 
 
 SINI support comments and sections, and is highly configurable.
 
+![example.png](example.png)
+
 # Install
 
 `Install-Package Sini`
@@ -165,7 +167,49 @@ bar = hello
 foo_bar = true
 ```
 
-Note that ToObject() only supports *one level of nesting*. This is because ini files don't support nesting, and you can't tell if a new section is contained inside the previous section, or under root.
+#### Deeper Nesting
+
+What happens when your nested object contains another nested object? After we use the section name for the first level nesting, following levels of nesting will use a decimal point prefix in keys.
+
+Let's take a look at a more realistic example to illustrate that. Consider the following configuration object:
+
+```cs
+class Config
+{
+    public GraphicsConfig Graphics;
+    public SoundConfig Sound;
+}
+
+class GraphicsConfig
+{
+    public bool Fullscreen;  
+    public class ResolutionConfig
+    {
+        public int Width;
+        public int Height;
+    }
+    public ResolutionConfig Resolution;
+}
+
+class SoundConfig
+{
+    public int Volume;
+}
+```
+
+The corresponding ini file for it would look like this:
+
+```ini
+[graphics]
+fullscreen = true
+resolution.width = 1280
+resolution.height = 1024
+
+[sound]
+volume = 100
+```
+
+As you can see in the example above, `Graphics` is nested and have another nested object in it, `Resolution`, so for the values under `Resolution` we use decimal point for keys prefix. 
 
 ### Custom Parsers
 
@@ -231,6 +275,45 @@ For example, a field named 'Foo' will be taken from a key named 'foo', and 'FooB
 
 
 # Advanced Stuff
+
+## Multiline Values
+
+You can have string values that span on multiple lines. To do so, end the value with the backward slash character:
+
+```ini
+multiline_value = this is \
+a multiline \
+value.
+```
+
+This behavior is configurable, you can change the character used to indicate multiline value by setting ```IniFile.DefaultConfig.ContinueNextLineCharacter```, or you can disable multilines completely by setting it to '\0'.
+
+Note that you can't have empty lines or comments after a multiline character, for example this is illegal:
+
+```ini
+; format error!
+bad_multi = this is \
+
+mutiline value.
+```
+
+This is also illegal:
+
+```ini
+; format error!
+bad_multi_2 = this is \
+; you can't have comment here!
+mutiline value.
+```
+
+This is fine though:
+
+```ini
+; the line with just the \ will be empty line in the multiline value
+ok_multiline = this is \
+\
+multiline value.
+```
 
 ## Booleans
 
@@ -319,6 +402,18 @@ customConf.AllowCommentsAfterValue = false;           // <-- change something
 var ini = new Sini.IniFile("ok_file.ini", customConf);      // <-- use custom configuration just for this file
 ```
 
+
+# Changelog
+
+## 1.0.1
+
+First release.
+
+## 1.0.2
+
+- Added deeper level nesting with key prefixes (for ToObject() API).
+- Added support in multiline values.
+- Added more tests and rearranged code.
 
 # License
 

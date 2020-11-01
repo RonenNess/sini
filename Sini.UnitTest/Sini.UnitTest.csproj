@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="test_object_readme_example.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="test_object_multi.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

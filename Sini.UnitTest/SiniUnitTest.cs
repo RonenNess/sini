@@ -7,12 +7,6 @@ namespace SiniTest.UnitTest
     [TestClass]
     public class SiniUnitTest
     {
-        // test enum values.
-        public enum MyEnum
-        {
-            Foo,
-            Bar,
-        }
 
         [TestMethod]
         public void BasicTypes()
@@ -58,6 +52,7 @@ namespace SiniTest.UnitTest
             Assert.AreEqual("world", ini.GetStr("section2", "hello"));
         }
 
+
         [TestMethod]
         public void DefaultValues()
         {
@@ -86,8 +81,21 @@ namespace SiniTest.UnitTest
 
         }
 
+
         [TestMethod]
         public void Exists()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check multiline value
+            Assert.AreEqual("this is\na multiline\nvalue.", ini.GetStr("section1", "multiline", null));
+            Assert.AreEqual("this is\n\na double multiline\nvalue.", ini.GetStr("section1", "multiline_2", null));
+        }
+
+
+        [TestMethod]
+        public void MultilineValue()
         {
             // open ini file
             var ini = new Sini.IniFile("ok_file.ini");
@@ -100,6 +108,7 @@ namespace SiniTest.UnitTest
             Assert.IsTrue(ini.ContainsKey("section1", "str_val"));
             Assert.IsFalse(ini.ContainsKey("section1", "str_val_nope"));
         }
+
 
         [TestMethod]
         public void WrongFormats()
@@ -140,14 +149,6 @@ namespace SiniTest.UnitTest
         }
 
 
-        // custom struct to test custom parsers
-        public struct MyPoint
-        {
-            public int X;
-            public int Y;
-        }
-
-
         [TestMethod]
         public void IniToObject()
         {
@@ -176,6 +177,10 @@ namespace SiniTest.UnitTest
             Assert.AreEqual(-1, ret.Nested.NestedPoint.X);
             Assert.AreEqual(-5, ret.Nested.NestedPoint.Y);
 
+            // deeper nested
+            Assert.AreEqual("ok", ret.Nested.Deeper.Value);
+            Assert.AreEqual("wohoo", ret.Nested.Deeper.EvenDeeper.Value);
+
             // read two objects from the same file
             TestObjectMulti obj1 = IniFile.ToObject<TestObjectMulti>("test_object_multi.ini", section: "obj1");
             TestObjectMulti obj2 = IniFile.ToObject<TestObjectMulti>("test_object_multi.ini", section: "obj2");
@@ -186,6 +191,44 @@ namespace SiniTest.UnitTest
             Assert.AreEqual("rab", obj2.Foo);
             Assert.AreEqual("bye", obj2.Hello);
         }
+
+
+        [TestMethod]
+        public void IniToObjectExampleFromReadme()
+        {
+            // parse object
+            Config ret = IniFile.ToObject<Config>("test_object_readme_example.ini");
+
+            // validate fields
+            Assert.IsTrue(ret.Graphics.Fullscreen);
+            Assert.AreEqual(1280, ret.Graphics.Resolution.Width);
+            Assert.AreEqual(1024, ret.Graphics.Resolution.Height);
+            Assert.AreEqual(100, ret.Sound.Volume);
+        }
+
+        #region classes for BasicTypes
+
+        // test enum values.
+        public enum MyEnum
+        {
+            Foo,
+            Bar,
+        }
+
+        #endregion
+
+        #region classes for CustomTypes
+
+        // custom struct to test custom parsers
+        public struct MyPoint
+        {
+            public int X;
+            public int Y;
+        }
+
+        #endregion
+
+        #region classes For IniToObject
 
         /// <summary>
         /// Test object for ini-to-object API with specific section.
@@ -223,6 +266,53 @@ namespace SiniTest.UnitTest
             public float OtherField;
             public MyEnum EnumVal;
             public MyPoint NestedPoint;
+            public DeeperNestedTestObject Deeper;
         }
+
+        /// <summary>
+        /// Deeper nested object to parse from inside NestedTestObject.
+        /// </summary>
+        public class DeeperNestedTestObject
+        {
+            public string Value;
+            public DeeperDeeperNestedTestObject EvenDeeper;
+        }
+
+        /// <summary>
+        /// Deeper deeper nested object to parse from inside DeeperNestedTestObject.
+        /// </summary>
+        public class DeeperDeeperNestedTestObject
+        {
+            public string Value;
+        }
+
+        #endregion
+
+        #region classes For IniToObjectExampleFromReadme
+
+        /// <summary>
+        /// Config for readme test
+        /// </summary>
+        class Config
+        {
+            public GraphicsConfig Graphics;
+            public SoundConfig Sound;
+        }
+        class GraphicsConfig
+        {
+            public bool Fullscreen;
+            public class ResolutionConfig
+            {
+                public int Width;
+                public int Height;
+            }
+            public ResolutionConfig Resolution;
+        }
+        class SoundConfig
+        {
+            public int Volume;
+        }
+
+        #endregion
     }
 }
