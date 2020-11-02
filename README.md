@@ -15,28 +15,26 @@ Or visit [https://www.nuget.org/packages/sini/](https://www.nuget.org/packages/s
 
 # Usage
 
-Using SINI is quite simple:
+Using SINI to deserialize objects from INI files is quite simple:
+
+```cs
+MyObj obj1 = IniFile.ToObject<MyObj>("my_ini_file.ini");
+```
+
+Or you can read individual keys as different value types:
 
 ```cs
 // open ini file named 'my_conf_file.ini'.
-// you can also create ini file from string array, where every string = line.
 var ini = new Sini.IniFile("my_conf_file.ini");
 
-// read key 'some_key' as string from global section. if not set, will return "default value if not found" instead.
+// read values as string, int, bool and enum
 var someVal = ini.GetStr(null, "some_key", "default value if not found");
-
-// read key 'int_key' under section 'section1' as int. if not set, will return 0 instead.
 var intVal = ini.GetInt("section1", "int_key", 0);
-
-// read key 'bool_key' under section 'section1' as boolean. if not set, will return false instead.
 var boolVal = ini.GetBool("section1", "bool_key", false);
-
-// read key 'enum_key' under section 'section1' as enum of type MyEnum. if not set, will return MyEnum.Foo instead.
-// MyEnum has either 'Foo' or 'Bar' values.
 var enumVal = ini.GetEnum("section1", "enum_key", MyEnum.Foo);
 ```
 
-And a valid ini file to match the example above would be something like:
+And a valid ini file to match the last example above would be something like:
 
 ```ini
 ; in global section
