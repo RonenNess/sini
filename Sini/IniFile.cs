@@ -685,6 +685,15 @@ namespace Sini
             bool snakecase = (flags & ParseObjectFlags.SnakecaseKeysAndSections) != 0;
             if (lowercase && snakecase) { throw new ArgumentException("Can't have both 'LowercaseKeysAndSections' and 'SnakecaseKeysAndSections' flags set!"); }
 
+            if (instance.GetType() == typeof(Dictionary<string,string>) && section != null)
+            {
+                foreach (string key in ini.GetAllUnreadKeys().Where( s => s.StartsWith($"[{section}]") ).Select(x => x.Replace($"[{section}] ","")))
+                {
+                    (instance as Dictionary<string,string>)?.Add(key,ini.GetStr(section, key, null));
+                }
+                return;
+            }
+
             // iterate public fields and properties we can set
             var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
             var propsAndFields = instance.GetType().GetFields(bindingFlags).Cast<MemberInfo>().Concat(instance.GetType().GetProperties(bindingFlags)).ToArray();
