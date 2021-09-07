@@ -70,6 +70,8 @@ If you need a built-in C# type that doesn't have a wrapper, you can use `GetPrim
 short value = GetPrimitive<short>("section", "some_key", -1);
 ```
 
+In addition, it has useful methods to get all sections, keys, check if a given key or section exist, convert to dictionary, and much more.
+
 ### Exceptions
 
 If you try to read a wrong format, for example you try to read int but value is not a valid number, a `FormatException` exception will be thrown. This exception is used by any Get*() method that can fail on parsing.
@@ -412,6 +414,14 @@ First release.
 - Added deeper level nesting with key prefixes (for ToObject() API).
 - Added support in multiline values.
 - Added more tests and rearranged code.
+
+## 1.0.3
+
+- Added 'Sections' to get all section names.
+- Added 'GetKeys' to get all keys of a section.
+- Added 'AsDictionary' to get a section as a string-string dictionary.
+- Added 'ContainsSection' to check if a section name exists.
+
 
 # License
 

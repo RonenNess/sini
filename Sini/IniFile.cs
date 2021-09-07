@@ -206,6 +206,39 @@ namespace Sini
         #region Getters
 
         /// <summary>
+        /// Get all section names.
+        /// </summary>
+        public string[] Sections => _sections.Keys.ToArray();
+
+        /// <summary>
+        /// Get all keys under a section.
+        /// </summary>
+        /// <param name="section">Section name or null.</param>
+        /// <returns>Array with keys under given section.</returns>
+        public string[] GetKeys(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                return _globalSection.Keys.ToArray();
+            }
+            return _sections[section].Keys.ToArray();
+        }
+
+        /// <summary>
+        /// Get all values of a section as a dictionary.
+        /// </summary>
+        /// <param name="section">Section name or null.</param>
+        /// <returns>Section values as a dictionary.</returns>
+        public Dictionary<string, string> AsDictionary(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                return _globalSection.ToDictionary(entry => entry.Key, entry => entry.Value);
+            }
+            return _sections[section].ToDictionary(entry => entry.Key, entry => entry.Value);
+        }
+
+        /// <summary>
         /// Get string value.
         /// </summary>
         /// <param name="section">Section to get from, or null for global section.</param>
@@ -234,6 +267,16 @@ namespace Sini
                 return ret;
             }
             return defaultValue;
+        }
+
+        /// <summary>
+        /// Check if a section exists.
+        /// </summary>
+        /// <param name="section">Section to get from, or null for global section.</param>
+        /// <returns>True if found, false otherwise.</returns>
+        public bool ContainsSection(string section)
+        {
+            return _sections.ContainsKey(section);
         }
 
         /// <summary>

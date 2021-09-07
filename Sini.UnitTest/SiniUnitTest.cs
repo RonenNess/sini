@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sini;
 using System;
+using System.Collections.Generic;
 
 namespace SiniTest.UnitTest
 {
@@ -95,6 +96,20 @@ namespace SiniTest.UnitTest
 
 
         [TestMethod]
+        public void Sections()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check multiline value
+            var expected = new List<string>("section1,section2,invalids,special".Split(','));
+            expected.Sort();
+            var values = new List<string>(ini.Sections);
+            values.Sort();
+            CollectionAssert.AreEqual(expected, values);
+        }
+
+        [TestMethod]
         public void MultilineValue()
         {
             // open ini file
@@ -109,6 +124,57 @@ namespace SiniTest.UnitTest
             Assert.IsFalse(ini.ContainsKey("section1", "str_val_nope"));
         }
 
+        [TestMethod]
+        public void ContainsKey()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check existing and non-existing keys in global section
+            Assert.IsTrue(ini.ContainsKey("section1", "str_val"));
+            Assert.IsFalse(ini.ContainsKey("section1", "foobar"));
+            Assert.IsTrue(ini.ContainsKey(null, "global_val"));
+            Assert.IsFalse(ini.ContainsKey(null, "foobar"));
+        }
+
+        [TestMethod]
+        public void ContainsSection()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check existing and non-existing keys in global section
+            Assert.IsTrue(ini.ContainsSection("section1"));
+            Assert.IsFalse(ini.ContainsSection("foobar"));
+        }
+
+        [TestMethod]
+        public void GetKeys()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check existing and non-existing keys in global section
+            CollectionAssert.AreEquivalent(ini.GetKeys(null), "global_val".Split(','));
+            CollectionAssert.AreEquivalent(ini.GetKeys("section2"), "hello,value_with_comment".Split(','));
+        }
+
+        [TestMethod]
+        public void AsDictionary()
+        {
+            // open ini file
+            var ini = new Sini.IniFile("ok_file.ini");
+
+            // check existing and non-existing keys in global section
+            var expected = new Dictionary<string, string>();
+            expected["global_val"] = "foo";
+            CollectionAssert.AreEquivalent(ini.AsDictionary(null), expected);
+
+            expected = new Dictionary<string, string>();
+            expected["hello"] = "world";
+            expected["value_with_comment"] = "hello";
+            CollectionAssert.AreEquivalent(ini.AsDictionary("section2"), expected);
+        }
 
         [TestMethod]
         public void WrongFormats()
