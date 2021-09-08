@@ -256,8 +256,25 @@ namespace SiniTest.UnitTest
             Assert.AreEqual("world", obj1.Hello);
             Assert.AreEqual("rab", obj2.Foo);
             Assert.AreEqual("bye", obj2.Hello);
-        }
 
+            // parse object
+            TestObjectNestedDict nestedAsDict = IniFile.ToObject<TestObjectNestedDict>("test_object.ini");
+
+            // validate fields
+            Assert.AreEqual(5, nestedAsDict.Foo);
+            Assert.AreEqual("hello", nestedAsDict.Bar);
+            Assert.IsTrue(nestedAsDict.FooBar);
+            Assert.AreEqual(MyEnum.Bar, nestedAsDict.EnumVal);
+            Assert.AreEqual(7, nestedAsDict.Point.X);
+            Assert.AreEqual(3, nestedAsDict.Point.Y);
+
+            // validate nested fields as dictionary
+            Assert.AreEqual("5", nestedAsDict.Nested["this_is_nested"]);
+            Assert.AreEqual("10", nestedAsDict.Nested["other_field"]);
+            Assert.AreEqual("Foo", nestedAsDict.Nested["enum_val"]);
+            Assert.AreEqual("-1,-5", nestedAsDict.Nested["nested_point"]);
+
+        }
 
         [TestMethod]
         public void IniToObjectExampleFromReadme()
@@ -321,6 +338,24 @@ namespace SiniTest.UnitTest
             public MyPoint Point;
 
             public NestedTestObject Nested;
+        }
+
+        /// <summary>
+        /// Test object for ini-to-object API - with dictionary as nested.
+        /// </summary>
+        public class TestObjectNestedDict
+        {
+            public int Foo;
+            public string Bar;
+            public bool FooBar { get; set; }
+
+            public string NotReadProp { get; private set; }
+            protected string NotReadField;
+
+            public MyEnum EnumVal;
+            public MyPoint Point;
+
+            public Dictionary<string, string> Nested;
         }
 
         /// <summary>

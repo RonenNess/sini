@@ -211,6 +211,34 @@ volume = 100
 
 As you can see in the example above, `Graphics` is nested and have another nested object in it, `Resolution`, so for the values under `Resolution` we use decimal point for keys prefix. 
 
+### Dictionary<string,string> Field
+
+When parsing an object that has a `Dictionary<string, string>` member, it will read the section into this member as-is, meaning that the dictionary will be filled with the keys and values from the section corresponding to the field's name. 
+
+For example if we have the following object:
+
+```cs
+public class MyObj
+{
+    public int Foo;
+    public string Bar;
+    public Dictionary<string,string> Nested;
+}
+```
+
+and we parse this ini file into it:
+
+```ini
+foo = 5
+bar = hello
+
+[nested]
+foo_bar = true
+second_val = 123
+```
+
+The result of `Nested` field will be a dictionary with values: `{"foo_bar": "true", "second_val": "123"}`.
+
 ### Custom Parsers
 
 If you defined any custom type parsers prior to calling `ToObject()`, for example like with `MyPoint` [in the example above](#reading-custom-types), they will be used when attempting to read this type instead of the default behavior (which is calling `ToObject()` internally on a section with the same name).
@@ -422,6 +450,10 @@ First release.
 - Added 'AsDictionary' to get a section as a string-string dictionary.
 - Added 'ContainsSection' to check if a section name exists.
 
+## 1.0.4
+
+- Added option to parse `Dictionary<string, string>` as object member.
+- Fixed `AsDictionary` to update accessed keys set.
 
 # License
 

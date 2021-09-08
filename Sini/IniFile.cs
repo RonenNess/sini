@@ -231,11 +231,22 @@ namespace Sini
         /// <returns>Section values as a dictionary.</returns>
         public Dictionary<string, string> AsDictionary(string section)
         {
+            Dictionary<string, string> ret;
             if (string.IsNullOrEmpty(section))
             {
-                return _globalSection.ToDictionary(entry => entry.Key, entry => entry.Value);
+                ret = _globalSection.ToDictionary(entry => entry.Key, entry => entry.Value);
             }
-            return _sections[section].ToDictionary(entry => entry.Key, entry => entry.Value);
+            else
+            {
+                ret = _sections[section].ToDictionary(entry => entry.Key, entry => entry.Value);
+            }
+
+            foreach (var key in ret.Keys)
+            {
+                _keysAccessed.Add(section + ":" + key);
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -792,6 +803,11 @@ namespace Sini
                             throw new FormatException($"Invalid value in ini file! Tried to parse '[{section ?? string.Empty}].{key}' as {fieldType.Name}, but value was invalid ('{asStr}').");
                         }
                     }
+                }
+                // special case - field is a dictionary of strings
+                else if (fieldType == typeof(Dictionary<string, string>))
+                {
+                    value = ini.AsDictionary(key);
                 }
                 // not a primitive type?
                 else
