@@ -13,7 +13,7 @@ namespace SiniTest.UnitTest
         public void BasicTypes()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // get global var
             Assert.AreEqual(ini.GetStr(null, "global_val"), "foo");
@@ -58,7 +58,7 @@ namespace SiniTest.UnitTest
         public void DefaultValues()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // test basic values from section
             foreach (var section in new string[] { "section1", "", "blaaa" })
@@ -87,7 +87,7 @@ namespace SiniTest.UnitTest
         public void Exists()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check multiline value
             Assert.AreEqual("this is\na multiline\nvalue.", ini.GetStr("section1", "multiline", null));
@@ -99,7 +99,7 @@ namespace SiniTest.UnitTest
         public void Sections()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check multiline value
             var expected = new List<string>("section1,section2,invalids,special".Split(','));
@@ -113,7 +113,7 @@ namespace SiniTest.UnitTest
         public void MultilineValue()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check existing and non-existing keys in global section
             Assert.IsTrue(ini.ContainsKey(null, "global_val"));
@@ -128,7 +128,7 @@ namespace SiniTest.UnitTest
         public void ContainsKey()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check existing and non-existing keys in global section
             Assert.IsTrue(ini.ContainsKey("section1", "str_val"));
@@ -141,7 +141,7 @@ namespace SiniTest.UnitTest
         public void ContainsSection()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check existing and non-existing keys in global section
             Assert.IsTrue(ini.ContainsSection("section1"));
@@ -152,7 +152,7 @@ namespace SiniTest.UnitTest
         public void GetKeys()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check existing and non-existing keys in global section
             CollectionAssert.AreEquivalent(ini.GetKeys(null), "global_val".Split(','));
@@ -163,7 +163,7 @@ namespace SiniTest.UnitTest
         public void AsDictionary()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // check existing and non-existing keys in global section
             var expected = new Dictionary<string, string>();
@@ -180,7 +180,7 @@ namespace SiniTest.UnitTest
         public void WrongFormats()
         {
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
             Assert.ThrowsException<FormatException>(() => { ini.GetInt("section1", "str_val"); });
             Assert.ThrowsException<FormatException>(() => { ini.GetLong("section1", "str_val"); });
             Assert.ThrowsException<FormatException>(() => { ini.GetULong("section1", "str_val"); });
@@ -194,6 +194,86 @@ namespace SiniTest.UnitTest
             Assert.ThrowsException<FormatException>(() => { ini.GetEnum("invalids", "bad_enum2", MyEnum.Foo); });
         }
 
+        [TestMethod]
+        public void SetValues()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // replace value and validate it was changed
+            Assert.AreEqual("val1", ini.GetStr("section1", "str_val"));
+            ini.SetValue("section1", "str_val", "new_val");
+            Assert.AreEqual("new_val", ini.GetStr("section1", "str_val"));
+
+            // replace value without section and validate it was changed
+            Assert.AreEqual("foo", ini.GetStr(null, "global_val"));
+            ini.SetValue(null, "global_val", "new_value_set");
+            Assert.AreEqual("new_value_set", ini.GetStr(null, "global_val"));
+
+            // add a new value and validate it was created
+            Assert.AreEqual(null, ini.GetStr("section1", "not_existing"));
+            ini.SetValue("section1", "not_existing", "abcd");
+            Assert.AreEqual("abcd", ini.GetStr("section1", "not_existing"));
+
+            // add a new value and validate it was created, under global section
+            Assert.AreEqual(null, ini.GetStr(null, "not_existing"));
+            ini.SetValue(null, "not_existing", "abcd_2");
+            Assert.AreEqual("abcd_2", ini.GetStr(null, "not_existing"));
+
+            // add a new value and validate it was created, under a newly created section
+            Assert.AreEqual(null, ini.GetStr("non_existing_section", "str_val"));
+            ini.SetValue("non_existing_section", "str_val", "qwerty");
+            Assert.AreEqual("qwerty", ini.GetStr("non_existing_section", "str_val"));
+        }
+
+        [TestMethod]
+        public void DeleteValues()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // delete a simple value and make sure no longer exists
+            Assert.AreEqual("val1", ini.GetStr("section1", "str_val"));
+            ini.DeleteKey("section1", "str_val");
+            Assert.AreEqual(null, ini.GetStr("section1", "str_val"));
+            Assert.IsFalse(ini.ContainsKey("section1", "str_val"));
+            Assert.IsTrue(ini.ContainsKey("section1", "int_val"));
+
+            // delete all keys from a section and make sure section is removed
+            Assert.IsTrue(ini.ContainsSection("special"));
+            Assert.AreEqual("15,25", ini.GetStr("special", "point_val"));
+            ini.DeleteKey("special", "point_val");
+            Assert.AreEqual(null, ini.GetStr("special", "point_val"));
+            Assert.IsFalse(ini.ContainsSection("special"));
+        }
+
+        [TestMethod]
+        public void DeleteSection()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // delete all keys from a section and make sure section is removed
+            Assert.IsTrue(ini.ContainsSection("special"));
+            Assert.AreEqual("15,25", ini.GetStr("special", "point_val"));
+            ini.DeleteSection("special");
+            Assert.AreEqual(null, ini.GetStr("special", "point_val"));
+            Assert.IsFalse(ini.ContainsSection("special"));
+
+
+            // delete global section and make sure its empty after
+            Assert.IsTrue(ini.ContainsKey(null, "global_val"));
+            ini.DeleteSection(null);
+            Assert.IsFalse(ini.ContainsKey(null, "global_val"));
+        }
+
+        [TestMethod]
+        public void CreateEmpty()
+        {
+            var ini = IniFile.CreateEmpty();
+            ini.SetValue("foo", "bar", "hello");
+            Assert.AreEqual("hello", ini.GetStr("foo", "bar"));
+        }
 
         [TestMethod]
         public void CustomTypes()
@@ -206,7 +286,7 @@ namespace SiniTest.UnitTest
             };
 
             // open ini file
-            var ini = new Sini.IniFile("ok_file.ini");
+            var ini = new IniFile("ok_file.ini");
 
             // read point 
             var mypoint = ini.GetCustomType("section1", "point_val", new MyPoint());

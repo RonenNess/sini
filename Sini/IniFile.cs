@@ -47,6 +47,14 @@ namespace Sini
         #region Constructors
 
         /// <summary>
+        /// Create empty ini file.
+        /// Use the public static method CreateEmpty() to create empty fils.
+        /// </summary>
+        internal IniFile()
+        {
+        }
+
+        /// <summary>
         /// Open and parse the ini file.
         /// </summary>
         /// <param name="path">Path of the ini file.</param>
@@ -628,6 +636,90 @@ namespace Sini
                 sb.Append("\n");
             }
             return sb.ToString();
+        }
+
+        #endregion
+
+        #region Creating Files
+
+        /// <summary>
+        /// Create and return a new empty ini file.
+        /// </summary>
+        /// <returns>Ini file.</returns>
+        public static IniFile CreateEmpty()
+        {
+            return new IniFile();
+        }
+
+        /// <summary>
+        /// Save ini file to path.
+        /// </summary>
+        /// <param name="path">Path to save to.</param>
+        public void SaveTo(string path)
+        {
+            File.WriteAllText(path, ToFullString());
+        }
+
+        /// <summary>
+        /// Set a value, creating section if needed.
+        /// </summary>
+        /// <param name="section">Section to set value in, or null to use global.</param>
+        /// <param name="key">Key to set.</param>
+        /// <param name="value">Value to set as string.</param>
+        public void SetValue(string section, string key, string value)
+        {
+            // get section dictionary
+            Dictionary<string, string> sectionDict;
+            if (!string.IsNullOrEmpty(section))
+            {
+                if (!_sections.TryGetValue(section, out sectionDict))
+                {
+                    sectionDict = _sections[section] = new Dictionary<string, string>();
+                }
+            }
+            else
+            {
+                 sectionDict = _globalSection;
+            }
+
+            // set value
+            sectionDict[key] = value;
+        }
+
+        /// <summary>
+        /// Deletes a key.
+        /// If after deletion the section remains empty, will remove the entire section (unless its global).
+        /// </summary>
+        /// <param name="section">Section to delete from, or null to delete from global section.</param>
+        /// <param name="key">Key to delete.</param>
+        public void DeleteKey(string section, string key)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                _globalSection.Remove(key);
+            }
+            else if (_sections.TryGetValue(section, out Dictionary<string, string> sectionDict))
+            {
+                sectionDict.Remove(key);
+                if (sectionDict.Count == 0) { _sections.Remove(section); }
+            }
+        }
+
+        /// <summary>
+        /// Deletes an entire section and all keys in it.
+        /// If section is null or empty, will clear global section instead.
+        /// </summary>
+        /// <param name="section">Section to delete.</param>
+        public void DeleteSection(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                _globalSection.Clear();
+            }
+            else
+            {
+                _sections.Remove(section);
+            }
         }
 
         #endregion

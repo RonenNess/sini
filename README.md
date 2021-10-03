@@ -455,6 +455,14 @@ First release.
 - Added option to parse `Dictionary<string, string>` as object member.
 - Fixed `AsDictionary` to update accessed keys set.
 
+## 1.0.5
+
+- Added 'SetValue'.
+- Added 'DeleteKey'.
+- Added 'DeleteSection'.
+- Added ability to create empty ini files.
+- Added ability to save ini files.
+
 # License
 
 SINI is distributed with the permissive MIT license.
