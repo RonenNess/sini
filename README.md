@@ -469,7 +469,7 @@ First release.
 - Added NewLine setting to control how we break lines.
 - Added comments support.
 - Refactored the way we write INI files to make them clearer and prettier.
-- Added tests.
+- Added more tests.
 
 # License
 
