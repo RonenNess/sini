@@ -66,6 +66,11 @@ namespace Sini
         public Dictionary<Type, Func<string, object>> CustomParsers;
 
         /// <summary>
+        /// Characters to use for new lines when writing the ini file.
+        /// </summary>
+        public string NewLine;
+
+        /// <summary>
         /// Return default configs.
         /// </summary>
         public static IniConfig CreateDefaults()
@@ -79,6 +84,7 @@ namespace Sini
             ret.BoolPositiveValues = new HashSet<string>(new string[] { "1", "true", "yes", "on" });
             ret.BoolNegativeValues = new HashSet<string>(new string[] { "0", "false", "no", "off" });
             ret.LowercaseBoolValues = true;
+            ret.NewLine = "\n";
             ret.ContinueNextLineCharacter = '\\';
             ret.CustomParsers = new Dictionary<Type, Func<string, object>>();
             return ret;

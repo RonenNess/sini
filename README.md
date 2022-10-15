@@ -463,6 +463,14 @@ First release.
 - Added ability to create empty ini files.
 - Added ability to save ini files.
 
+# 1.0.6
+
+- Fixed writing multiline values (was missing the \ before).
+- Added NewLine setting to control how we break lines.
+- Added comments support.
+- Refactored the way we write INI files to make them clearer and prettier.
+- Added tests.
+
 # License
 
 SINI is distributed with the permissive MIT license.

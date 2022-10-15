@@ -138,6 +138,45 @@ namespace SiniTest.UnitTest
         }
 
         [TestMethod]
+        public void ParseComments()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // check parsed comments
+            Assert.AreEqual("comment line", ini.GetComment("section2", "hello"));
+            Assert.AreEqual("comment line 2", ini.GetComment("section2", "value_with_comment"));
+            Assert.AreEqual("section comment", ini.GetComment("special", null));
+            Assert.AreEqual("global value comment", ini.GetComment(null, "global_val"));
+            Assert.AreEqual(String.Join('\n', "but this part of the multiline comment", "will remain."), ini.GetComment("special", "point_val"));
+        }
+
+        [TestMethod]
+        public void ToFullString()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // build full text, make sure comments are kept (except the ones that were suppoed to be removed)
+            var fullText = ini.ToFullString();
+            var expected = System.IO.File.ReadAllText("ok_file_parsed_and_written.ini").Replace(Environment.NewLine, "\n");
+            Assert.AreEqual(expected, fullText);
+        }
+
+        [TestMethod]
+        public void ClearComments()
+        {
+            // open ini file
+            var ini = new IniFile("ok_file.ini");
+
+            // make sure comments are removed
+            ini.ClearComments();
+            var fullText = ini.ToFullString();
+            var expected = System.IO.File.ReadAllText("ok_file_parsed_and_written_no_comments.ini").Replace(Environment.NewLine, "\n");
+            Assert.AreEqual(expected, fullText);
+        }
+
+        [TestMethod]
         public void ContainsSection()
         {
             // open ini file

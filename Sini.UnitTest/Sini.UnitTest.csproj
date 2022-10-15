@@ -18,6 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ok_file_parsed_and_written_no_comments.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ok_file_parsed_and_written.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="test_object_readme_example.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

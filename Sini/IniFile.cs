@@ -26,6 +26,9 @@ namespace Sini
         // global section.
         Dictionary<string, string> _globalSection = new Dictionary<string, string>();
 
+        // comments
+        Dictionary<string, string> _comments = new Dictionary<string, string>();
+
         // all keys we read. used for validations.
         HashSet<string> _keysAccessed = new HashSet<string>();
 
@@ -100,7 +103,7 @@ namespace Sini
             _config = config;
 
             // turn comments to hashset
-            HashSet<char> comments = new HashSet<char>(config.CommentCharacters);
+            HashSet<char> commentsCharacters = new HashSet<char>(config.CommentCharacters);
 
             // currently active section
             Dictionary<string, string> section = _globalSection;
@@ -108,6 +111,12 @@ namespace Sini
             // for multiline values
             bool continueMultiline = false;
             string lastKey = null;
+
+            // current comment lines
+            List<string> currComments = new List<string>();
+
+            // current section name
+            string currSectionName = null;
 
             // iterate and parse lines
             int lineIndex = 0;
@@ -119,10 +128,30 @@ namespace Sini
                 // trim line
                 var line = rawline.Trim();
 
+                // is it a comment line
+                var isComment = (line.Length) > 0 && commentsCharacters.Contains(line[0]);
+
                 // skip empty and comment lines
-                if (string.IsNullOrEmpty(line) || comments.Contains(line[0]))
+                if (string.IsNullOrEmpty(line) || isComment)
                 { 
-                    if (continueMultiline) { throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': Cannot have empty line or comment after multiline value (previous line ended with '{config.ContinueNextLineCharacter}' which means value should continue to this line)."); }
+                    // if part of multiline value throw exception
+                    if (continueMultiline) 
+                    { 
+                        throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': Cannot have empty line or comment after multiline value (previous line ended with '{config.ContinueNextLineCharacter}' which means value should continue to this line)."); 
+                    }
+
+                    // if comment, add to current comments list
+                    if (isComment)
+                    {
+                        currComments.Add(line.Substring(1).Trim());
+                    }
+                    // if its not a comment, clear whatever comment we might have in cache
+                    else
+                    {
+                        currComments.Clear();
+                    }
+
+                    // skip line
                     continue;
                 }
 
@@ -140,14 +169,14 @@ namespace Sini
                     }
 
                     // append value and continue
-                    section[lastKey] = section[lastKey] + '\n' + lineVal;
+                    section[lastKey] = section[lastKey] + _config.NewLine + lineVal;
                     continue;
                 }
 
                 // remove in-line comments
                 if (config.AllowCommentsAfterValue)
                 {
-                    foreach (var commentChar in comments)
+                    foreach (var commentChar in commentsCharacters)
                     {
                         line = line.Split(commentChar)[0].Trim();
                     }
@@ -168,6 +197,14 @@ namespace Sini
                             _sections[sectionName] = new Dictionary<string, string>();
                         }
                         section = _sections[sectionName];
+                        currSectionName = sectionName;
+
+                        // add comment to section
+                        if (currComments.Count > 0)
+                        {
+                            SetComment(sectionName, null, String.Join(_config.NewLine, currComments));
+                            currComments.Clear();
+                        }
 
                         // validate section key
                         if (!string.IsNullOrEmpty(config.KeyValidationRegex) && !Regex.IsMatch(sectionName, config.KeyValidationRegex))
@@ -193,6 +230,13 @@ namespace Sini
                 if (!string.IsNullOrEmpty(config.KeyValidationRegex) && !Regex.IsMatch(key, config.KeyValidationRegex))
                 {
                     throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': '{rawline}' key part '{key}' did not pass the regex validation.");
+                }
+
+                // add comment to section and key
+                if (currComments.Count > 0)
+                {
+                    SetComment(currSectionName, key, String.Join(_config.NewLine, currComments));
+                    currComments.Clear();
                 }
 
                 // check if we continue reading multiline value
@@ -254,6 +298,30 @@ namespace Sini
                 _keysAccessed.Add(section + ":" + key);
             }
 
+            return ret;
+        }
+
+        /// <summary>
+        /// Get the internal dictionary key we use for comments.
+        /// </summary>
+        /// <param name="section">Section or null.</param>
+        /// <param name="key">Key or null.</param>
+        /// <returns>Internal key we use to identify comments for this section / key.</returns>
+        string GetCommentKey(string section, string key)
+        {
+            return (section ?? string.Empty) + ":" + (key ?? string.Empty);
+        }
+
+        /// <summary>
+        /// Get the comment string we have for a given section and key, or null if there's no comment attached.
+        /// </summary>
+        /// <param name="section">Section to get comment for.</param>
+        /// <param name="key">Key to get comment for, or null to get the section comment.</param>
+        /// <returns>Comment or null if not set.</returns>
+        public string GetComment(string section, string key)
+        {
+            var commentKey = GetCommentKey(section, key);
+            _comments.TryGetValue(commentKey, out string ret);
             return ret;
         }
 
@@ -611,30 +679,61 @@ namespace Sini
         /// <returns>All config as string.</returns>
         public string ToFullString()
         {
+            // handle comments
+            Action<StringBuilder, string, string> WriteComment = (StringBuilder sb, string section, string key) =>
+            {
+                var comment = GetComment(section, key);
+                if (comment != null)
+                {
+                    var commentPlusSpace = _config.CommentCharacters[0] + " ";
+                    sb.Append(commentPlusSpace);
+                    sb.Append(comment.Replace(_config.NewLine, _config.NewLine + commentPlusSpace));
+                    sb.Append('\n');
+                }
+            };
+
+            // prepare value for writing
+            Func<string, string> PrepareValueForOutput = (string val) =>
+            {
+                return val.Replace(_config.NewLine, '\\' + _config.NewLine);
+            };
+            
+            // string builder to build the ini file
             StringBuilder sb = new StringBuilder();
+
+            // handle global section
             foreach (var data in _globalSection)
             {
-                sb.Append("    ");
+                WriteComment(sb, null, data.Key);
                 sb.Append(data.Key);
                 sb.Append(" = ");
-                sb.Append(data.Value);
+                sb.Append(PrepareValueForOutput(data.Value));
                 sb.Append("\n");
             }
+            if (_globalSection.Count > 0)
+            {
+                sb.Append("\n");
+            }
+            
+            // handle sections
             foreach (var section in _sections)
             {
-                sb.Append("  [");
+                WriteComment(sb, section.Key, null);
+                sb.Append("[");
                 sb.Append(section.Key);
                 sb.Append("]\n");
                 foreach (var data in section.Value)
                 {
-                    sb.Append("    ");
+                    WriteComment(sb, section.Key, data.Key);
                     sb.Append(data.Key);
                     sb.Append(" = ");
-                    sb.Append(data.Value);
+                    sb.Append(PrepareValueForOutput(data.Value));
                     sb.Append("\n");
                 }
                 sb.Append("\n");
             }
+
+            // convert to string and return
             return sb.ToString();
         }
 
@@ -658,6 +757,40 @@ namespace Sini
         public void SaveTo(string path)
         {
             File.WriteAllText(path, ToFullString());
+        }
+
+        /// <summary>
+        /// Clear all comments.
+        /// </summary>
+        public void ClearComments()
+        {
+            _comments.Clear();
+        }
+
+        /// <summary>
+        /// Set the comment string we have for a given section and key, or null to remove comments.
+        /// </summary>
+        /// <param name="section">Section to set comment for.</param>
+        /// <param name="key">Key to set comment for, or null to set the section comment.</param>
+        /// <param name="comment">Comment to set or null to remove.</param>
+        public void SetComment(string section, string key, string comment)
+        {
+            // get comment key
+            var commentKey = GetCommentKey(section, key);
+
+            // remove comment
+            if (comment == null)
+            {
+                if (_comments.ContainsKey(commentKey))
+                {
+                    _comments.Remove(commentKey);
+                }
+            }
+            // set comment
+            else
+            {
+                _comments[commentKey] = comment;
+            }
         }
 
         /// <summary>

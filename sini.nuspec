@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
 	<id>Sini</id>
-	<version>1.0.5</version>
+	<version>1.0.6</version>
 	<authors>Ronen Ness</authors>
 	<owners>RonenNess</owners>
 	<title>SINI</title>
@@ -10,7 +10,7 @@
 	<license type="expression">MIT</license>
 	<projectUrl>https://github.com/RonenNess/sini</projectUrl>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
-	<releaseNotes>Added ability to create empty files, set and delete values.</releaseNotes>
+	<releaseNotes>Added comments support and improved the method to write files.</releaseNotes>
 	<description>SINI (Simple INI) is an ini files wrapper lib with easy-to-use methods to parse C# primitives as well as enums and custom objects. It also provides an API to convert an ini file into an object instance, similar to how C# allow to read XMLs as objects. 
 
 SINI support comments and sections, and highly configurable.</description>
