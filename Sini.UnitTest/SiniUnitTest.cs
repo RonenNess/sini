@@ -2,8 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sini;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Net.NetworkInformation;
+
 
 namespace SiniTest.UnitTest
 {
