@@ -2,6 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sini;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Net.NetworkInformation;
 
 namespace SiniTest.UnitTest
 {
@@ -406,6 +408,48 @@ namespace SiniTest.UnitTest
             Assert.AreEqual(1280, ret.Graphics.Resolution.Width);
             Assert.AreEqual(1024, ret.Graphics.Resolution.Height);
             Assert.AreEqual(100, ret.Sound.Volume);
+        }
+
+        [TestMethod]
+        public void IniFromObject()
+        {
+            // remove the default parser
+            if (IniFile.DefaultConfig.CustomParsers.ContainsKey(typeof(MyPoint)))
+            {
+                IniFile.DefaultConfig.CustomParsers.Remove(typeof(MyPoint));
+            }
+
+            // create an object
+            TestObject original = new TestObject()
+            {
+                Bar = "aaa",
+                EnumVal = MyEnum.Bar,
+                Foo = 15,
+                FooBar = false,
+                Point = new MyPoint() { X = 5, Y = 100 },
+                Nested = new NestedTestObject()
+                {
+                    EnumVal = MyEnum.Foo,
+                    OtherField = 1.234f
+                }
+            };
+
+            // create ini
+            var ini = IniFile.FromObject(original);
+
+            // now create copy object from ini
+            var copy = new TestObject();
+            IniFile.ToObject(ref copy, ini, null, IniFile.ParseObjectFlags.DefaultFalgs | IniFile.ParseObjectFlags.AllowMissingFields | IniFile.ParseObjectFlags.AllowAdditionalKeys);
+
+            // make sure original and copy are the same
+            Assert.AreEqual(original.Bar, copy.Bar);
+            Assert.AreEqual(original.EnumVal, copy.EnumVal);
+            Assert.AreEqual(original.Foo, copy.Foo);
+            Assert.AreEqual(original.FooBar, copy.FooBar);
+            Assert.AreEqual(original.Point.X, copy.Point.X);
+            Assert.AreEqual(original.Point.Y, copy.Point.Y);
+            Assert.AreEqual(original.Nested.EnumVal, copy.Nested.EnumVal);
+            Assert.AreEqual(original.Nested.OtherField, copy.Nested.OtherField);
         }
 
         #region classes for BasicTypes

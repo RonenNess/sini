@@ -471,6 +471,14 @@ First release.
 - Refactored the way we write INI files to make them clearer and prettier.
 - Added more tests.
 
+# 1.0.7
+
+- Added methods to generate INI file from object.
+
+# 1.0.8
+
+- Upgraded to .net 6.
+
 # License
 
 SINI is distributed with the permissive MIT license.

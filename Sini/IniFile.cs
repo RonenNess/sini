@@ -868,7 +868,7 @@ namespace Sini
         /// <typeparam name="T">Object type to read.</typeparam>
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static T ToObject<T>(IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
+        protected static T _ToObject<T>(IniFile ini, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
             ToObject(ref ret, ini, null, flags);
@@ -885,7 +885,7 @@ namespace Sini
         /// <param name="ini">Ini file to read values from.</param>
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
-        protected static T ToObject<T>(IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
+        protected static T _ToObject<T>(IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
         {
             var ret = (T)Activator.CreateInstance(typeof(T));
             ToObject(ref ret, ini, section, flags);
@@ -903,7 +903,7 @@ namespace Sini
         /// <param name="section">Section to read from, or null to read from root.</param>
         /// <param name="flags">Parsing flags.</param>
         /// <param name="keyPrefix">Prefix to append to all keys.</param>
-        protected static object ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string keyPrefix = "")
+        protected static object _ToObject(Type T, IniFile ini, string section, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string keyPrefix = "")
         {
             var ret = Activator.CreateInstance(T);
             ToObject(ref ret, ini, section, flags, keyPrefix);
@@ -1074,7 +1074,7 @@ namespace Sini
                         }
 
                         // parse value 
-                        value = ToObject(fieldType, ini, nestedSection, flags, nestedKeyPrefix);
+                        value = _ToObject(fieldType, ini, nestedSection, flags, nestedKeyPrefix);
                     }
                 }
 
@@ -1099,6 +1099,112 @@ namespace Sini
                     throw new FormatException($"Found unused key '{extras.First()}' while parsing file '{ini.Path}' for object type '{typeof(T).Name}'. Note: you can disable this exception by setting the 'AllowAdditionalKeys' flag.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Convert object to ini file.
+        /// This method get an instance of the object and return an INI file composed from its public fields and properties.
+        /// </summary>
+        /// <remarks>For fields that use custom classes, be sure to register them to ini config first.</remarks>
+        /// <typeparam name="T">Object type to parse.</typeparam>
+        /// <param name="instance">Object instance to convert to file.</param>
+        /// <param name="flags">Parsing flags.</param>
+        /// <returns>New INI file instance, composed from the given object.</returns>
+        public static IniFile FromObject<T>(T instance, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs)
+        {
+            var ret = new IniFile();
+            ret._config = DefaultConfig;
+            FromObject(ref ret, instance, flags);
+            return ret;
+        }
+
+        /// <summary>
+        /// Convert object to ini file.
+        /// This method get an instance of the object and an INI file, and fill the ini from the object public fields and properties.
+        /// </summary>
+        /// <remarks>For fields that use custom classes, be sure to register them to ini config first.</remarks>
+        /// <typeparam name="T">Object type to parse.</typeparam>
+        /// <param name="ini">INI file to write into.</param>
+        /// <param name="instance">Object instance to convert to file.</param>
+        /// <param name="flags">Parsing flags.</param>
+        /// <param name="section">Section to set values into.</param>
+        /// <param name="keyPrefix">Prefix to append to all keys.</param>
+        public static void FromObject<T>(ref IniFile ini, T instance, ParseObjectFlags flags = ParseObjectFlags.DefaultFalgs, string section = null, string keyPrefix = "")
+        {
+            // check if keys should be lowercase or snake case
+            bool lowercase = (flags & ParseObjectFlags.LowercaseKeysAndSections) != 0;
+            bool snakecase = (flags & ParseObjectFlags.SnakecaseKeysAndSections) != 0;
+            if (lowercase && snakecase) { throw new ArgumentException("Can't have both 'LowercaseKeysAndSections' and 'SnakecaseKeysAndSections' flags set!"); }
+
+            // iterate public fields and properties we can set
+            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+            var propsAndFields = instance.GetType().GetFields(bindingFlags).Cast<MemberInfo>().Concat(instance.GetType().GetProperties(bindingFlags)).ToArray();
+            foreach (MemberInfo prop in propsAndFields)
+            {
+                // make sure we can write to this property. if not, skip
+                if (prop is PropertyInfo)
+                {
+                    if ((prop as PropertyInfo).GetSetMethod() == null) { continue; }
+                }
+
+                // get key from property name
+                var key = prop.Name;
+                var fieldType = prop is PropertyInfo ? (prop as PropertyInfo).PropertyType : (prop as FieldInfo).FieldType;
+
+                // lowercase the key
+                if (lowercase)
+                {
+                    key = key.ToLower();
+                }
+                // snakecase the key
+                else if (snakecase)
+                {
+                    key = string.Concat(key.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+                }
+
+                // add prefix
+                var keyNoPrefix = key;
+                key = keyPrefix + key;
+
+                // value to set
+                object value = (prop is PropertyInfo) ? (prop as PropertyInfo).GetValue(instance) : (prop as FieldInfo).GetValue(instance);
+
+                // null? remove value
+                if (value == null)
+                {
+                    if (ini.ContainsKey(section, key))
+                    {
+                        ini.DeleteKey(section, key);
+                    }
+                }
+                // string type? no processing needed
+                else if ((fieldType == typeof(string)) || fieldType.IsPrimitive || fieldType.IsEnum)
+                {
+                    ini.SetValue(section, key, value.ToString());
+                }
+                // got an object? set values from the object recursively.
+                else
+                {
+                    // section and prefix to use for nested object
+                    string nestedSection = section;
+                    string nestedKeyPrefix = keyPrefix;
+
+                    // if we're already in a section, use key prefix
+                    if (section != null)
+                    {
+                        nestedKeyPrefix += keyNoPrefix + ".";
+                    }
+                    // if we're not in a section, use section for nesting
+                    else
+                    {
+                        nestedSection = keyNoPrefix;
+                    }
+
+                    // parse value 
+                    FromObject(ref ini, value, flags, nestedSection, nestedKeyPrefix);
+                }
+            }
+            
         }
 
         /// <summary>
