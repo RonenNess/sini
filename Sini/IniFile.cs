@@ -1141,10 +1141,10 @@ namespace Sini
             var propsAndFields = instance.GetType().GetFields(bindingFlags).Cast<MemberInfo>().Concat(instance.GetType().GetProperties(bindingFlags)).ToArray();
             foreach (MemberInfo prop in propsAndFields)
             {
-                // make sure we can write to this property. if not, skip
+                // make sure we can read from this property. if not, skip
                 if (prop is PropertyInfo)
                 {
-                    if ((prop as PropertyInfo).GetSetMethod() == null) { continue; }
+                    if ((prop as PropertyInfo).GetGetMethod() == null) { continue; }
                 }
 
                 // get key from property name
@@ -1182,26 +1182,36 @@ namespace Sini
                 {
                     ini.SetValue(section, key, value.ToString());
                 }
-                // got an object? set values from the object recursively.
+                // got an object? set values from the object recursively or use custom serializer.
                 else
                 {
-                    // section and prefix to use for nested object
-                    string nestedSection = section;
-                    string nestedKeyPrefix = keyPrefix;
-
-                    // if we're already in a section, use key prefix
-                    if (section != null)
+                    // check if its a type we registered as custom serializer
+                    if (ini._config.CustomSerializers.TryGetValue(fieldType, out Func<object, string> serializer))
                     {
-                        nestedKeyPrefix += keyNoPrefix + ".";
+                        var asStr = serializer(value);
+                        ini.SetValue(section, key, asStr);
                     }
-                    // if we're not in a section, use section for nesting
+                    // no custom serializer? serialize recursively
                     else
                     {
-                        nestedSection = keyNoPrefix;
-                    }
+                        // section and prefix to use for nested object
+                        string nestedSection = section;
+                        string nestedKeyPrefix = keyPrefix;
 
-                    // parse value 
-                    FromObject(ref ini, value, flags, nestedSection, nestedKeyPrefix);
+                        // if we're already in a section, use key prefix
+                        if (section != null)
+                        {
+                            nestedKeyPrefix += keyNoPrefix + ".";
+                        }
+                        // if we're not in a section, use section for nesting
+                        else
+                        {
+                            nestedSection = keyNoPrefix;
+                        }
+
+                        // parse value 
+                        FromObject(ref ini, value, flags, nestedSection, nestedKeyPrefix);
+                    }
                 }
             }
             

@@ -433,22 +433,56 @@ namespace SiniTest.UnitTest
                 }
             };
 
-            // create ini
-            var ini = IniFile.FromObject(original);
+            // test without custom parsers / serializers
+            {
+                // create ini
+                var ini = IniFile.FromObject(original);
 
-            // now create copy object from ini
-            var copy = new TestObject();
-            IniFile.ToObject(ref copy, ini, null, IniFile.ParseObjectFlags.DefaultFalgs | IniFile.ParseObjectFlags.AllowMissingFields | IniFile.ParseObjectFlags.AllowAdditionalKeys);
+                // now create copy object from ini
+                var copy = new TestObject();
+                IniFile.ToObject(ref copy, ini, null, IniFile.ParseObjectFlags.DefaultFalgs | IniFile.ParseObjectFlags.AllowMissingFields | IniFile.ParseObjectFlags.AllowAdditionalKeys);
 
-            // make sure original and copy are the same
-            Assert.AreEqual(original.Bar, copy.Bar);
-            Assert.AreEqual(original.EnumVal, copy.EnumVal);
-            Assert.AreEqual(original.Foo, copy.Foo);
-            Assert.AreEqual(original.FooBar, copy.FooBar);
-            Assert.AreEqual(original.Point.X, copy.Point.X);
-            Assert.AreEqual(original.Point.Y, copy.Point.Y);
-            Assert.AreEqual(original.Nested.EnumVal, copy.Nested.EnumVal);
-            Assert.AreEqual(original.Nested.OtherField, copy.Nested.OtherField);
+                // make sure original and copy are the same
+                Assert.AreEqual(original.Bar, copy.Bar);
+                Assert.AreEqual(original.EnumVal, copy.EnumVal);
+                Assert.AreEqual(original.Foo, copy.Foo);
+                Assert.AreEqual(original.FooBar, copy.FooBar);
+                Assert.AreEqual(original.Point.X, copy.Point.X);
+                Assert.AreEqual(original.Point.Y, copy.Point.Y);
+                Assert.AreEqual(original.Nested.EnumVal, copy.Nested.EnumVal);
+                Assert.AreEqual(original.Nested.OtherField, copy.Nested.OtherField);
+            }
+
+            // test with custom parsers / serializers
+            {
+                IniFile.DefaultConfig.CustomParsers[typeof(MyPoint)] = (string val) =>
+                {
+                    var parts = val.Split(',');
+                    return new MyPoint() { X = int.Parse(parts[0]), Y = int.Parse(parts[1]) };
+                };
+                IniFile.DefaultConfig.CustomSerializers[typeof(MyPoint)] = (object val) =>
+                {
+                    var point = (MyPoint)val;
+                    return point.X.ToString() + "," + point.Y.ToString();
+                };
+
+                // create ini
+                var ini = IniFile.FromObject(original);
+
+                // now create copy object from ini
+                var copy = new TestObject();
+                IniFile.ToObject(ref copy, ini, null, IniFile.ParseObjectFlags.DefaultFalgs | IniFile.ParseObjectFlags.AllowMissingFields | IniFile.ParseObjectFlags.AllowAdditionalKeys);
+
+                // make sure original and copy are the same
+                Assert.AreEqual(original.Bar, copy.Bar);
+                Assert.AreEqual(original.EnumVal, copy.EnumVal);
+                Assert.AreEqual(original.Foo, copy.Foo);
+                Assert.AreEqual(original.FooBar, copy.FooBar);
+                Assert.AreEqual(original.Point.X, copy.Point.X);
+                Assert.AreEqual(original.Point.Y, copy.Point.Y);
+                Assert.AreEqual(original.Nested.EnumVal, copy.Nested.EnumVal);
+                Assert.AreEqual(original.Nested.OtherField, copy.Nested.OtherField);
+            }
         }
 
         #region classes for BasicTypes
@@ -500,6 +534,10 @@ namespace SiniTest.UnitTest
             public MyPoint Point;
 
             public NestedTestObject Nested;
+
+            public int GetterOnly => 5;
+
+            public int SetterOnly { set { } }
         }
 
         /// <summary>
@@ -510,6 +548,7 @@ namespace SiniTest.UnitTest
             public int Foo;
             public string Bar;
             public bool FooBar { get; set; }
+            public int SetterOnly { set { } }
 
             public string NotReadProp { get; private set; }
             protected string NotReadField;

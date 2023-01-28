@@ -479,6 +479,11 @@ First release.
 
 - Upgraded to .net 6.
 
+# 1.0.9
+
+- Better handling properties with only getter or only setter when converting to objects and back.
+- Added option to register custom serializers for converting object to ini file.
+
 # License
 
 SINI is distributed with the permissive MIT license.

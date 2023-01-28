@@ -66,6 +66,11 @@ namespace Sini
         public Dictionary<Type, Func<string, object>> CustomParsers;
 
         /// <summary>
+        /// Custom serializing methods for serializing custom types.
+        /// </summary>
+        public Dictionary<Type, Func<object, string>> CustomSerializers;
+
+        /// <summary>
         /// Characters to use for new lines when writing the ini file.
         /// </summary>
         public string NewLine;
@@ -87,6 +92,7 @@ namespace Sini
             ret.NewLine = "\n";
             ret.ContinueNextLineCharacter = '\\';
             ret.CustomParsers = new Dictionary<Type, Func<string, object>>();
+            ret.CustomSerializers = new Dictionary<Type, Func<object, string>>();
             return ret;
         }
     }
