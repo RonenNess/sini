@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sini;
 using System;
 using System.Collections.Generic;
+using static System.Collections.Specialized.BitVector32;
 
 
 namespace SiniTest.UnitTest
@@ -55,6 +56,15 @@ namespace SiniTest.UnitTest
         }
 
 
+        [TestMethod]
+        public void SectionWithSpace()
+        {
+            var config = IniConfig.CreateDefaults();
+            config.KeyValidationRegex = @"^[a-zA-Z_\.0-9 ]+$";
+            var ini = new IniFile("ok_file_section_space.ini", config);
+            Assert.AreEqual("world", ini.GetStr("section with spaces", "hello", "default_val"));
+        }
+        
         [TestMethod]
         public void DefaultValues()
         {
