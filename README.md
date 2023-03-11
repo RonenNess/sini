@@ -486,9 +486,9 @@ First release.
 
 # 1.1.0
 
-- Added tests.
-- Removed `CreateDefaults()` for ini config. Just create an empty instance instead.
-- Fixed comments.
+- Added some tests.
+- Fixed some comments.
+- Removed `CreateDefaults()` from ini config. Just create an empty instance instead.
 - Renamed the config key for multiline to `MultilineContinuation` and turned it into a string to support multiple characters.
 
 # License
