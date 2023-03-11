@@ -35,7 +35,7 @@ namespace Sini
         /// <summary>
         /// Default config to use when no config instance is provided.
         /// </summary>
-        public static IniConfig DefaultConfig = IniConfig.CreateDefaults();
+        public static IniConfig DefaultConfig = new IniConfig();
 
         // current file config.
         IniConfig _config;
@@ -137,7 +137,7 @@ namespace Sini
                     // if part of multiline value throw exception
                     if (continueMultiline) 
                     { 
-                        throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': Cannot have empty line or comment after multiline value (previous line ended with '{config.ContinueNextLineCharacter}' which means value should continue to this line)."); 
+                        throw new FormatException($"Invalid line {lineIndex} in ini file '{Path}': Cannot have empty line or comment after multiline value (previous line ended with '{config.MultilineContinuation}' which means value should continue to this line)."); 
                     }
 
                     // if comment, add to current comments list
@@ -160,12 +160,12 @@ namespace Sini
                 {
                     // get value and check if should continue to another line
                     var lineVal = rawline.Trim();
-                    continueMultiline = lineVal.EndsWith(config.ContinueNextLineCharacter);
+                    continueMultiline = lineVal.EndsWith(config.MultilineContinuation);
                     
                     // remove multiline trailing character
                     if (continueMultiline)
                     {
-                        lineVal = lineVal.Substring(0, lineVal.Length - 1).TrimEnd();
+                        lineVal = lineVal.Substring(0, lineVal.Length - config.MultilineContinuation.Length).TrimEnd();
                     }
 
                     // append value and continue
@@ -240,12 +240,12 @@ namespace Sini
                 }
 
                 // check if we continue reading multiline value
-                continueMultiline = (config.ContinueNextLineCharacter != '\0') && value.EndsWith(config.ContinueNextLineCharacter);
+                continueMultiline = !string.IsNullOrEmpty(config.MultilineContinuation) && value.EndsWith(config.MultilineContinuation);
 
                 // remove multiline trailing character
                 if (continueMultiline)
                 {
-                    value = value.Substring(0, value.Length - 1).TrimEnd();
+                    value = value.Substring(0, value.Length - config.MultilineContinuation.Length).TrimEnd();
                 }
 
                 // add value

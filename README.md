@@ -484,6 +484,13 @@ First release.
 - Better handling properties with only getter or only setter when converting to objects and back.
 - Added option to register custom serializers for converting object to ini file.
 
+# 1.1.0
+
+- Added tests.
+- Removed `CreateDefaults()` for ini config. Just create an empty instance instead.
+- Fixed comments.
+- Renamed the config key for multiline to `MultilineContinuation` and turned it into a string to support multiple characters.
+
 # License
 
 SINI is distributed with the permissive MIT license.

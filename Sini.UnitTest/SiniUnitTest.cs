@@ -55,16 +55,24 @@ namespace SiniTest.UnitTest
             Assert.AreEqual("world", ini.GetStr("section2", "hello"));
         }
 
-
         [TestMethod]
         public void SectionWithSpace()
         {
-            var config = IniConfig.CreateDefaults();
+            var config = new IniConfig();
             config.KeyValidationRegex = @"^[a-zA-Z_\.0-9 ]+$";
             var ini = new IniFile("ok_file_section_space.ini", config);
             Assert.AreEqual("world", ini.GetStr("section with spaces", "hello", "default_val"));
         }
-        
+
+        [TestMethod]
+        public void CustomMultilineContinuation()
+        {
+            var config = new IniConfig();
+            config.MultilineContinuation = "|=";
+            var ini = new IniFile("custom_multiline.ini", config);
+            Assert.AreEqual("val1\nval2\nval3", ini.GetStr("section1", "str_val", "default_val"));
+        }
+
         [TestMethod]
         public void DefaultValues()
         {

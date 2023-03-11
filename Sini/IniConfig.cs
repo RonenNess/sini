@@ -13,13 +13,13 @@ namespace Sini
     public struct IniConfig
     {
         /// <summary>
-        /// Characters used as comment lines.
+        /// Characters used to begin comments.
         /// </summary>
         public char[] CommentCharacters;
 
         /// <summary>
         /// If true, allow comments to appear after the value segment.
-        /// If false, will only allow comments as first character of every line.
+        /// If false, will only allow whole-line comments.
         /// </summary>
         public bool AllowCommentsAfterValue;
 
@@ -29,7 +29,7 @@ namespace Sini
         public bool AllowSections;
 
         /// <summary>
-        /// Character used to split between key and value.
+        /// Character used to separate between the key and the value.
         /// </summary>
         public char Delimiter;
 
@@ -40,25 +40,25 @@ namespace Sini
         public string KeyValidationRegex;
 
         /// <summary>
-        /// Words to parse as 'true' when trying to parse booleans.
+        /// Words to parse as 'true' when trying to parse boolean values.
         /// </summary>
         public HashSet<string> BoolPositiveValues;
 
         /// <summary>
-        /// Words to parse as 'false' when trying to parse booleans.
+        /// Words to parse as 'false' when trying to parse boolean values.
         /// </summary>
         public HashSet<string> BoolNegativeValues;
 
         /// <summary>
-        /// If true, will always lowercase bool values before parsing them.
+        /// If true, will always lowercase boolean values before parsing them.
         /// </summary>
         public bool LowercaseBoolValues;
 
         /// <summary>
-        /// If not \0, will allow to break values into multiple lines (for strings) by adding this character at the end of the line.
-        /// For example, if the value is \, every value ending with \ will continue to next line. Need need to repeat the key.
+        /// If not null or empty, will allow to break string values into multiple lines by adding this sequence at the end of the line to break.
+        /// For example, if the value is \, every value ending with \ will continue to the following line. 
         /// </summary>
-        public char ContinueNextLineCharacter;
+        public string MultilineContinuation;
 
         /// <summary>
         /// Custom parsing methods for fetching custom types.
@@ -76,24 +76,22 @@ namespace Sini
         public string NewLine;
 
         /// <summary>
-        /// Return default configs.
+        /// Create the ini configuration with default params.
         /// </summary>
-        public static IniConfig CreateDefaults()
+        public IniConfig()
         {
-            IniConfig ret = new IniConfig();
-            ret.CommentCharacters = new char[] { '#', ';' };
-            ret.AllowCommentsAfterValue = true;
-            ret.AllowSections = true;
-            ret.Delimiter = '=';
-            ret.KeyValidationRegex = @"^[a-zA-Z_\.0-9]+$";
-            ret.BoolPositiveValues = new HashSet<string>(new string[] { "1", "true", "yes", "on" });
-            ret.BoolNegativeValues = new HashSet<string>(new string[] { "0", "false", "no", "off" });
-            ret.LowercaseBoolValues = true;
-            ret.NewLine = "\n";
-            ret.ContinueNextLineCharacter = '\\';
-            ret.CustomParsers = new Dictionary<Type, Func<string, object>>();
-            ret.CustomSerializers = new Dictionary<Type, Func<object, string>>();
-            return ret;
+            CommentCharacters = new char[] { '#', ';' };
+            AllowCommentsAfterValue = true;
+            AllowSections = true;
+            Delimiter = '=';
+            KeyValidationRegex = @"^[a-zA-Z_\.0-9]+$";
+            BoolPositiveValues = new HashSet<string>(new string[] { "1", "true", "yes", "on" });
+            BoolNegativeValues = new HashSet<string>(new string[] { "0", "false", "no", "off" });
+            LowercaseBoolValues = true;
+            NewLine = "\n";
+            MultilineContinuation = "\\";
+            CustomParsers = new Dictionary<Type, Func<string, object>>();
+            CustomSerializers = new Dictionary<Type, Func<object, string>>();
         }
     }
     

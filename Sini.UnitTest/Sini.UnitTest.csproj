@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="custom_multiline.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="ok_file_section_space.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
