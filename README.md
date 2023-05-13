@@ -493,7 +493,7 @@ First release.
 
 ## 1.1.1
 
-- Updates .net version to 7.
+- Updated .net version to 7.
 - Fixed bug when converting ini to objects with booleans that are not 'true' or 'false'.
 - Removed useless old folder from git.
 
