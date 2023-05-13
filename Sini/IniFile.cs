@@ -1011,6 +1011,11 @@ namespace Sini
                         throw new FormatException($"Invalid value in ini file! Trying to read '[{section ?? string.Empty}].{key}' as enum of type '{fieldType.Name}', but value is '{asStr}'.");
                     }
                 }
+                // boolean type? parse with all boolean options
+                else if (fieldType == typeof(bool))
+                {
+                    value = ini.GetBool(section, key, false);
+                }
                 // primitive type? get primitive value and set
                 else if (fieldType.IsPrimitive)
                 {

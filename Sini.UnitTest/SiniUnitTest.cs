@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sini;
 using System;
 using System.Collections.Generic;
-using static System.Collections.Specialized.BitVector32;
 
 
 namespace SiniTest.UnitTest
@@ -373,6 +372,7 @@ namespace SiniTest.UnitTest
             Assert.AreEqual(MyEnum.Bar, ret.EnumVal);
             Assert.AreEqual(7, ret.Point.X);
             Assert.AreEqual(3, ret.Point.Y);
+            Assert.IsTrue(ret.BoolWithYes);
 
             // validate nested fields
             Assert.AreEqual(5, ret.Nested.ThisIsNested);
@@ -548,6 +548,8 @@ namespace SiniTest.UnitTest
             public string NotReadProp { get; private set; }
             protected string NotReadField;
 
+            public bool BoolWithYes;
+
             public MyEnum EnumVal;
             public MyPoint Point;
 
@@ -567,6 +569,7 @@ namespace SiniTest.UnitTest
             public string Bar;
             public bool FooBar { get; set; }
             public int SetterOnly { set { } }
+            public bool BoolWithYes;
 
             public string NotReadProp { get; private set; }
             protected string NotReadField;

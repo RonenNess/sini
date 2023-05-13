@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
 	<id>Sini</id>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<authors>Ronen Ness</authors>
 	<owners>RonenNess</owners>
 	<title>SINI</title>
@@ -10,18 +10,18 @@
 	<license type="expression">MIT</license>
 	<projectUrl>https://github.com/RonenNess/sini</projectUrl>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
-	<releaseNotes>Added support in multiline continuation as string, better config object, and added test.</releaseNotes>
+	<releaseNotes>Minor bugfix and upgrade to .net 7.</releaseNotes>
 	<description>SINI (Simple INI) is an ini files wrapper lib with easy-to-use methods to parse C# primitives as well as enums and custom objects. It also provides an API to convert an ini file into an object instance, similar to how C# allow to read XMLs as objects. 
 
 SINI support comments and sections, and highly configurable.</description>
 	<tags>ini,config,conf,.ini</tags>
 	<dependencies>
-        <group targetFramework=".net6.0" />
+        <group targetFramework=".net7.0" />
 	</dependencies>
   </metadata>
   <files>
-	<file src="Sini\bin\Release\net6.0\Sini.dll" target="lib\net6.0\Sini.dll"/>
-    <file src="Sini\bin\Release\net6.0\Sini.xml" target="lib\net6.0\Sini.xml"/>
+	<file src="Sini\bin\Release\net7.0\Sini.dll" target="lib\net7.0\Sini.dll"/>
+    <file src="Sini\bin\Release\net7.0\Sini.xml" target="lib\net7.0\Sini.xml"/>
     <file src="LICENSE" target="LICENSE" /> 
   </files>
 </package>

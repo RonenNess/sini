@@ -491,6 +491,12 @@ First release.
 - Removed `CreateDefaults()` from ini config. Just create an empty instance instead.
 - Renamed the config key for multiline to `MultilineContinuation` and turned it into a string to support multiple characters.
 
+# 1.1.1
+
+- Updates .net version to 7.
+- Fixed bug when converting ini to objects with booleans that are not 'true' or 'false'.
+- Removed useless old folder from git.
+
 # License
 
 SINI is distributed with the permissive MIT license.
