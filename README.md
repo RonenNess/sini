@@ -463,7 +463,7 @@ First release.
 - Added ability to create empty ini files.
 - Added ability to save ini files.
 
-# 1.0.6
+## 1.0.6
 
 - Fixed writing multiline values (was missing the \ before).
 - Added NewLine setting to control how we break lines.
@@ -471,27 +471,27 @@ First release.
 - Refactored the way we write INI files to make them clearer and prettier.
 - Added more tests.
 
-# 1.0.7
+## 1.0.7
 
 - Added methods to generate INI file from object.
 
-# 1.0.8
+## 1.0.8
 
 - Upgraded to .net 6.
 
-# 1.0.9
+## 1.0.9
 
 - Better handling properties with only getter or only setter when converting to objects and back.
 - Added option to register custom serializers for converting object to ini file.
 
-# 1.1.0
+## 1.1.0
 
 - Added some tests.
 - Fixed some comments.
 - Removed `CreateDefaults()` from ini config. Just create an empty instance instead.
 - Renamed the config key for multiline to `MultilineContinuation` and turned it into a string to support multiple characters.
 
-# 1.1.1
+## 1.1.1
 
 - Updates .net version to 7.
 - Fixed bug when converting ini to objects with booleans that are not 'true' or 'false'.
